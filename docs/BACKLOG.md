@@ -10,7 +10,13 @@ Revisit only after the vault has been in daily use for a few weeks.
 - [ ] **Trash with 30-day restore** instead of immediate delete.
 - [ ] **Paste to upload** on desktop: paste a screenshot or text and it becomes a file or a clip.
 - [ ] **Markdown preview** for notes (needs a safe renderer — a dependency decision).
-- [ ] **HEIC thumbnails** via `pillow-heif`.
+- [ ] **HEIC thumbnails** via `pillow-heif`. iPhone-only format — no use until there is an
+      iPhone in the picture.
+- [ ] **Video thumbnails** via ffmpeg in the Docker image. Decided against in D1: a large
+      dependency for a nicety. Videos show an icon with a play badge until then.
+- [ ] **Resumable / chunked uploads.** Decided against in D1 — needs an upload-session table
+      and client-side state. Until then a failed upload retries from the start, which on a
+      home network is usually fine. Revisit if large uploads over mobile data fail often.
 - [ ] **SQLite FTS5 search** if the simple LIKE search ever feels slow.
 - [ ] **Automatic off-machine backup copy** to an external drive or another computer on the tailnet.
 
