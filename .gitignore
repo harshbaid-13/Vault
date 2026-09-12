@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+
+# Vault data: database, uploaded files, thumbnails, temp
+data/
+backups/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
