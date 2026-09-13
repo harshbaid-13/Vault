@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** D2 (visual system)
-**Last updated:** 2026-09-12, after D1
+**Current stage:** D3 (clickable mockups)
+**Last updated:** 2026-09-12, after D2
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -22,7 +22,7 @@ do not remove it.
 
 ### Design
 - [x] D1 — UX and screen spec → `docs/DESIGN.md` Part 1
-- [ ] D2 — Visual system → `docs/DESIGN.md` Part 2 + `static/css/tokens.css`
+- [x] D2 — Visual system → `docs/DESIGN.md` Part 2 + `static/css/tokens.css`
 - [ ] D3 — Clickable mockups → `/mockups`
 - [ ] D4 — Design review (repeat until happy)
 - [ ] D5 — Technical plan → `docs/TECH_PLAN.md`
@@ -44,11 +44,14 @@ do not remove it.
 - **D1** — `docs/DESIGN.md` Part 1: UX. Navigation, 14 screens with 375px sketches,
   5 key flows with tap counts, shared interaction patterns, and what v1 leaves out.
   No code written.
+- **D2** — `docs/DESIGN.md` Part 2: Visual system. Direction "Paper & Ink", full colour
+  system for light and dark (all pairs computed against WCAG AA), type scale, spacing,
+  radius-by-hierarchy, touch rules, motion, and 15 components with their states.
+  Wrote `static/css/tokens.css` (82 custom properties, no selectors) and vendored 31 Lucide
+  icons + LICENSE into `static/icons/`.
 
 ## Next
-Run stage D2 from `docs/PLAYBOOK.md` (visual system → `docs/DESIGN.md` Part 2 +
-`static/css/tokens.css`). D1's open questions are all answered and folded into
-`docs/DESIGN.md`; nothing is blocking.
+Run stage D3 from `docs/PLAYBOOK.md` (clickable mockups → `/mockups`). Nothing is blocking.
 
 ## Known issues
 _(none yet — no code exists)_
@@ -73,3 +76,12 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **D1** — Kept despite there being no iPhone: the non-HTTPS clipboard fallback, EXIF
   rotation on thumbnails (Android rotates too), and HTTP Range responses (every browser
   needs them to seek video). Only HEIC thumbnails are iPhone-specific — backlogged.
+- **D2** — Visual direction is "Paper & Ink": warm paper, near-black ink, one deep green
+  accent, separation by hairline rules rather than cards and shadows. Chosen so the COPY
+  button is the only filled element on a screen — it stands out by isolation, not by being
+  loud — and so rows stay compact at 375px.
+- **D2** — No web fonts. System sans + `ui-monospace` for data. Zero font bytes, zero
+  external requests, instant render offline.
+- **D2** — Icons are real Lucide (ISC), fetched once and vendored into `static/icons/` with
+  their LICENSE. Nothing is fetched at runtime.
+- **D2** — Dark mode via `prefers-color-scheme` only, no switcher.

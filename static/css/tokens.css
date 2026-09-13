@@ -1,0 +1,206 @@
+/* Personal Vault — design tokens
+ * Visual direction: "Paper & Ink" (docs/DESIGN.md, Part 2).
+ *
+ * This file defines custom properties only. No selectors, no components.
+ * Every colour pair below was checked against WCAG AA (see Part 2 §2.3).
+ *
+ * Light is the default. Dark is applied via prefers-color-scheme only —
+ * there is no theme switcher in v1.
+ */
+
+:root {
+  /* ---- Colour: light ------------------------------------------------ */
+
+  /* Grounds. --bg is warm paper; --surface is the white a row or sheet
+     sits on; --surface-raised is for things floating above the page
+     (bottom sheet, modal, toast, upload panel). */
+  --c-bg: #FAF9F5;
+  --c-surface: #FFFFFF;
+  --c-surface-raised: #FFFFFF;
+  --c-surface-sunken: #F2F0E9;   /* code/preview boxes, disabled fields */
+
+  /* Hairlines. The whole layout leans on these instead of shadows. */
+  --c-border: #E4E1D8;
+  --c-border-strong: #CFCABB;    /* input outlines, focused row edges */
+
+  /* Ink */
+  --c-text: #1A1A18;             /* 16.5:1 on --c-bg */
+  --c-text-secondary: #4A4944;   /*  8.6:1 */
+  --c-text-muted: #6B6A63;       /*  5.2:1 — timestamps, sizes, counts */
+
+  /* Accent: deep green. Used for the COPY button, primary buttons,
+     links, the focus ring, and the active tab. Nothing else. */
+  --c-accent: #2F6F4E;           /*  5.7:1 as text on --c-bg */
+  --c-accent-hover: #275E42;
+  --c-accent-pressed: #1F4C35;
+  --c-accent-subtle: #EAF2ED;    /* active tab wash, selected row */
+  --c-on-accent: #FFFFFF;        /*  6.0:1 on --c-accent */
+
+  /* Success is the same green on purpose: "Copied ✓" should read as the
+     button doing its job, not as a second, louder colour. */
+  --c-success: #2F6F4E;
+  --c-on-success: #FFFFFF;
+
+  /* Danger: delete only. */
+  --c-danger: #A33A2A;           /*  6.2:1 as text on --c-bg */
+  --c-danger-hover: #8C2F21;
+  --c-danger-subtle: #FBEEEB;
+  --c-on-danger: #FFFFFF;        /*  6.6:1 on --c-danger */
+
+  /* Focus ring. Always visible, never removed. */
+  --c-focus: #2F6F4E;
+  --c-focus-on-accent: #1A1A18;  /* ring colour when the target is green */
+
+  /* Scrim behind a bottom sheet or modal. */
+  --c-scrim: rgb(26 26 24 / 0.45);
+
+  /* Photo viewer ground — always dark, in both colour schemes. */
+  --c-viewer-bg: #0E0E0C;
+
+  /* ---- Typography --------------------------------------------------- */
+
+  /* System stacks only. No web fonts: nothing to self-host, nothing to
+     fetch, no layout shift, and the vault renders instantly offline. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  /* Data font: clip contents, URLs, file sizes, hashes. A person has to
+     be able to read an SSH key off this screen character by character. */
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  /* Scale. --fs-base is 16px and is the floor for anything typed into:
+     iOS Safari zooms the page when a focused input is under 16px. */
+  --fs-xs: 0.75rem;     /* 12px — timestamps, file sizes, counts     */
+  --fs-sm: 0.875rem;    /* 14px — secondary row text, labels         */
+  --fs-base: 1rem;      /* 16px — body, list titles, ALL inputs      */
+  --fs-lg: 1.125rem;    /* 18px — section headings                   */
+  --fs-xl: 1.375rem;    /* 22px — screen title                       */
+  --fs-2xl: 1.75rem;    /* 28px — login wordmark, big empty states   */
+
+  --fw-regular: 400;
+  --fw-medium: 500;     /* row titles, tab labels */
+  --fw-semibold: 600;   /* buttons, screen titles */
+  --fw-bold: 700;       /* login wordmark only    */
+
+  --lh-tight: 1.25;     /* headings, single-line rows */
+  --lh-normal: 1.5;     /* body text                  */
+  --lh-relaxed: 1.6;    /* note body, clip content    */
+
+  /* ---- Spacing: 4px base -------------------------------------------- */
+  --space-1: 0.25rem;   /*  4px */
+  --space-2: 0.5rem;    /*  8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px — the default gutter */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+
+  /* ---- Radius by hierarchy ------------------------------------------ */
+  /* Not one radius everywhere. Size of the radius tracks size of the
+     thing: small controls are nearly square, floating surfaces are soft. */
+  --radius-xs: 3px;     /* chips, badges, the pin dot        */
+  --radius-sm: 6px;     /* buttons, inputs, COPY             */
+  --radius-md: 10px;    /* photo tiles, thumbnails, previews */
+  --radius-lg: 16px;    /* bottom sheet, modal, upload panel */
+  --radius-full: 999px; /* the ＋ button, filter pills        */
+
+  /* ---- Borders and shadows ------------------------------------------ */
+  --border-width: 1px;
+  --border-hairline: var(--border-width) solid var(--c-border);
+
+  /* Shadows are for things that genuinely float, and nothing else.
+     Rows, cards and tiles use a hairline instead. */
+  --shadow-none: none;
+  --shadow-raised: 0 1px 2px rgb(26 26 24 / 0.06);          /* ＋ button */
+  --shadow-sheet: 0 -4px 24px rgb(26 26 24 / 0.14);         /* sheets   */
+  --shadow-modal: 0 8px 32px rgb(26 26 24 / 0.18);          /* modals   */
+
+  /* ---- Touch and layout --------------------------------------------- */
+  --tap-min: 44px;              /* every interactive target, no exceptions */
+  --row-min-height: 56px;       /* list rows: two lines of text fit        */
+  --copy-height: 48px;          /* the COPY button                         */
+  --fab-size: 56px;             /* the ＋ button in the tab bar            */
+  --tabbar-height: 56px;        /* plus the safe-area inset below          */
+  --sidebar-width: 232px;
+  --content-max-width: 880px;
+  --breakpoint-desktop: 900px;  /* reference only; media queries hardcode  */
+
+  /* Bottom inset for iPhone home indicator and Android gesture bars.
+     Everything fixed to the bottom adds this. */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  /* ---- Motion -------------------------------------------------------- */
+  /* Motion only ever confirms something the user just did. Nothing
+     animates on its own, nothing loops, nothing bounces. */
+  --motion-fast: 120ms;    /* button press, toggle          */
+  --motion-base: 180ms;    /* toast in/out, fade            */
+  --motion-sheet: 240ms;   /* bottom sheet and modal        */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---- Z-index ------------------------------------------------------- */
+  --z-base: 0;
+  --z-sticky-header: 10;
+  --z-tabbar: 20;
+  --z-upload-panel: 30;
+  --z-scrim: 40;
+  --z-sheet: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+}
+
+/* ---- Colour: dark ---------------------------------------------------- */
+/* Warm dark, not blue-black: the same paper-and-ink idea after sundown.
+   The accent lightens so it still clears AA on a dark ground. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #151412;
+    --c-surface: #1D1C19;
+    --c-surface-raised: #24231F;
+    --c-surface-sunken: #111110;
+
+    --c-border: #302E29;
+    --c-border-strong: #46433C;
+
+    --c-text: #F2F0E9;             /* 16.1:1 on --c-bg */
+    --c-text-secondary: #C4C0B5;   /* 10.1:1 */
+    --c-text-muted: #948F83;       /*  5.7:1 */
+
+    --c-accent: #5FB489;           /*  7.3:1 as text on --c-bg */
+    --c-accent-hover: #6FC297;
+    --c-accent-pressed: #4F9E76;
+    --c-accent-subtle: #1B2B23;
+    --c-on-accent: #0F1A14;        /*  7.1:1 on --c-accent */
+
+    --c-success: #5FB489;
+    --c-on-success: #0F1A14;
+
+    --c-danger: #E0705C;           /*  5.8:1 as text on --c-bg */
+    --c-danger-hover: #EB8371;
+    --c-danger-subtle: #2C1A16;
+    --c-on-danger: #2A0F0A;        /*  5.7:1 on --c-danger */
+
+    --c-focus: #5FB489;
+    --c-focus-on-accent: #0F1A14;
+
+    --c-scrim: rgb(0 0 0 / 0.6);
+
+    --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-sheet: 0 -4px 24px rgb(0 0 0 / 0.5);
+    --shadow-modal: 0 8px 32px rgb(0 0 0 / 0.6);
+  }
+}
+
+/* ---- Reduced motion --------------------------------------------------- */
+/* Collapse durations rather than disabling transitions, so any code that
+   waits on transitionend still fires. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 1ms;
+    --motion-base: 1ms;
+    --motion-sheet: 1ms;
+  }
+}
