@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Home · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="app">
+<a class="skip-link" href="#main">Skip to content</a>
+<nav class="sidebar" aria-label="Sections">
+  <p class="sidebar__mark">My Vault</p>
+  <button class="btn btn--primary sidebar__upload" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button>
+  <ul class="sidebar__list">
+    <li><a class="sidebar__link sidebar__link--active" href="home.html" aria-current="page"><span class="icon icon--house icon--sm" aria-hidden="true"></span>Home</a></li>
+    <li><a class="sidebar__link" href="files.html"><span class="icon icon--folder icon--sm" aria-hidden="true"></span>Files</a></li>
+    <li><a class="sidebar__link" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sidebar__link" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sidebar__link" href="clipboard.html"><span class="icon icon--clipboard icon--sm" aria-hidden="true"></span>Clipboard</a></li>
+    <li><a class="sidebar__link" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sidebar__link" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+  </ul>
+  <ul class="sidebar__list sidebar__foot">
+    <li><a class="sidebar__link" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sidebar__link" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+</nav>
+<div class="app__main">
+<header class="topbar">
+  <h1 class="topbar__title">My Vault</h1>
+  <form class="search-field topbar__search desktop-only" action="search.html" role="search">
+    <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
+    <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
+  </form>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="search.html" aria-label="Search"><span class="icon icon--search" aria-hidden="true"></span></a></div>
+</header>
+<main class="page" id="main">
+<section aria-labelledby="h-pinned">
+  <div class="section-head"><h2 class="section-head__title" id="h-pinned">Pinned</h2><a class="section-head__link" href="favorites.html">See all</a></div>
+  <ul class="list">
+<li class="clip clip--compact" data-type="clip">
+  <span class="icon icon--clipboard row__icon" aria-hidden="true"></span>
+  <div class="clip__body">
+    <h3 class="clip__title">Wi-Fi Password</h3>
+    <p class="clip__masked"><span aria-hidden="true">••••••••</span><span class="visually-hidden">Content hidden</span></p>
+  </div>
+  <textarea class="clip__source" hidden readonly>
+mango-rain-4471</textarea>
+  <button class="copy-btn copy-btn--inline" type="button" data-copy aria-label="Copy Wi-Fi Password"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="preview-pdf.html"><span class="name"><span class="name__head">pass</span><span class="name__tail">port.pdf</span></span></a>
+    <span class="row__meta row__meta--data">2.4 MB · Aug 21</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="passport.pdf" aria-haspopup="dialog" aria-label="More actions for passport.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="link">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="http://192.168.1.1" target="_blank" rel="noopener noreferrer">Router admin</a>
+    <span class="row__meta"><span class="mono">192.168.1.1</span> · Sep 3</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Router admin" data-copy="http://192.168.1.1" aria-haspopup="dialog" aria-label="More actions for Router admin"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+  </ul>
+</section>
+<section aria-labelledby="h-recent">
+  <div class="section-head"><h2 class="section-head__title" id="h-recent">Recent</h2><a class="section-head__link" href="files.html">See all</a></div>
+  <ul class="list">
+<li class="row" data-type="photo">
+  <img class="row__thumb" src="img/photo-01.jpg" alt="" width="40" height="40" loading="lazy">
+  <div class="row__body">
+    <a class="row__title row__link" href="photo-viewer.html#p1"><span class="name"><span class="name__head">IMG_20260914_09</span><span class="name__tail">1532.jpg</span></span></a>
+    <span class="row__meta row__meta--data">4.1 MB · 2 hours ago</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="IMG_20260914_091532.jpg" aria-haspopup="dialog" aria-label="More actions for IMG_20260914_091532.jpg"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="preview-pdf.html"><span class="name"><span class="name__head">electricity-bill</span><span class="name__tail">-aug.pdf</span></span></a>
+    <span class="row__meta row__meta--data">186 KB · Yesterday</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-aug.pdf" aria-haspopup="dialog" aria-label="More actions for electricity-bill-aug.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="note">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="note-edit.html">Shopping list</a>
+    <span class="row__meta">Yesterday · milk, bread, coffee, eggs</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-note" data-sheet-title="Shopping list" aria-haspopup="dialog" aria-label="More actions for Shopping list"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="clip clip--compact" data-type="clip">
+  <span class="icon icon--clipboard row__icon" aria-hidden="true"></span>
+  <div class="clip__body">
+    <h3 class="clip__title">Bank IFSC code</h3>
+    <p class="clip__line">HDFC0001234</p>
+  </div>
+  <textarea class="clip__source" hidden readonly>
+HDFC0001234</textarea>
+  <button class="copy-btn copy-btn--inline" type="button" data-copy aria-label="Copy Bank IFSC code"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="row" data-type="photo">
+  <img class="row__thumb" src="img/photo-04.jpg" alt="" width="40" height="40" loading="lazy">
+  <div class="row__body">
+    <a class="row__title row__link" href="photo-viewer.html#p4"><span class="name"><span class="name__head">vacation-go</span><span class="name__tail">a-03.jpg</span></span></a>
+    <span class="row__meta row__meta--data">3.6 MB · Sep 11</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="vacation-goa-03.jpg" aria-haspopup="dialog" aria-label="More actions for vacation-goa-03.jpg"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+  </ul>
+</section>
+</main>
+</div>
+<nav class="tabbar" aria-label="Main">
+  <a class="tabbar__tab tabbar__tab--active" href="home.html" aria-current="page"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
+  <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
+  <button class="tabbar__tab" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
+</nav>
+
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-more-title">More</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sheet__item" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sheet__item" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sheet__item" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+    <li><a class="sheet__item" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sheet__item" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-file-title">File</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Renamed"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Moved to Documents"><span class="icon icon--folder-input icon--sm" aria-hidden="true"></span>Move</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Downloading…"><span class="icon icon--download icon--sm" aria-hidden="true"></span>Download</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-note" aria-labelledby="sheet-note-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-note-title">Note</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-link" aria-labelledby="sheet-link-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-link-title">Link</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="copy"><span class="icon icon--copy icon--sm" aria-hidden="true"></span>Copy URL</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="The link form is not in the mockups"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Edit</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>

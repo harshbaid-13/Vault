@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Log in · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="login">
+<main id="main">
+  <form class="login__form" action="home.html" method="get">
+    <h1 class="login__mark">My Vault</h1>
+    <div class="field">
+      <label class="field__label" for="password">Password</label>
+      <!-- No name attribute: in the mockup, nothing is ever put in the URL. -->
+      <input class="input" id="password" type="password" autocomplete="current-password" required aria-describedby="login-error">
+    </div>
+    <button class="btn btn--primary btn--block" type="submit">Log in</button>
+    <p class="field__error" id="login-error" aria-live="polite"></p>
+  </form>
+</main>
+</body>
+</html>

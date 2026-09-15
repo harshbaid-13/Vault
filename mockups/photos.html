@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Photos · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="app">
+<a class="skip-link" href="#main">Skip to content</a>
+<nav class="sidebar" aria-label="Sections">
+  <p class="sidebar__mark">My Vault</p>
+  <button class="btn btn--primary sidebar__upload" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button>
+  <ul class="sidebar__list">
+    <li><a class="sidebar__link" href="home.html"><span class="icon icon--house icon--sm" aria-hidden="true"></span>Home</a></li>
+    <li><a class="sidebar__link" href="files.html"><span class="icon icon--folder icon--sm" aria-hidden="true"></span>Files</a></li>
+    <li><a class="sidebar__link sidebar__link--active" href="photos.html" aria-current="page"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sidebar__link" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sidebar__link" href="clipboard.html"><span class="icon icon--clipboard icon--sm" aria-hidden="true"></span>Clipboard</a></li>
+    <li><a class="sidebar__link" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sidebar__link" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+  </ul>
+  <ul class="sidebar__list sidebar__foot">
+    <li><a class="sidebar__link" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sidebar__link" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+</nav>
+<div class="app__main">
+<header class="topbar">
+  <h1 class="topbar__title">Photos</h1>
+  <form class="search-field topbar__search desktop-only" action="search.html" role="search">
+    <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
+    <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
+  </form>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="search.html" aria-label="Search"><span class="icon icon--search" aria-hidden="true"></span></a><button class="btn btn--primary desktop-only" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button><button class="icon-btn" type="button" data-sheet-open="sheet-photos-menu" aria-haspopup="dialog" aria-label="Photo actions"><span class="icon icon--ellipsis" aria-hidden="true"></span></button></div>
+</header>
+<main class="page" id="main">
+<section aria-labelledby="h-sep">
+  <div class="section-head"><h2 class="section-head__title" id="h-sep">September 2026</h2></div>
+  <div class="photo-grid">
+  <a class="photo-tile" href="photo-viewer.html#p1"><img class="photo-tile__img" src="img/photo-01.jpg" width="1200" height="900" alt="IMG_20260914_091532.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p2"><img class="photo-tile__img" src="img/photo-02.jpg" width="1200" height="900" alt="IMG_20260912_184233.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p3"><img class="photo-tile__img" src="img/photo-03.jpg" width="750" height="1000" alt="IMG_20260912_183910.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p4"><img class="photo-tile__img" src="img/photo-04.jpg" width="1200" height="900" alt="vacation-goa-03.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p5"><img class="photo-tile__img" src="img/photo-05.jpg" width="1200" height="900" alt="vacation-goa-02.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p6"><img class="photo-tile__img" src="img/photo-06.jpg" width="1200" height="900" alt="vacation-goa-01.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#v1" aria-label="Video VID_20260911_174502.mp4, 0:42">
+    <span class="icon icon--video icon--lg" aria-hidden="true"></span>
+    <span class="photo-tile__badge"><span class="icon icon--play icon--xs" aria-hidden="true"></span>0:42</span>
+  </a>
+  <a class="photo-tile" href="photo-viewer.html#p7"><img class="photo-tile__img" src="img/photo-07.jpg" width="750" height="1000" alt="IMG_20260905_070112.jpg" loading="lazy"></a>
+  </div>
+</section>
+<section aria-labelledby="h-aug">
+  <div class="section-head"><h2 class="section-head__title" id="h-aug">August 2026</h2></div>
+  <div class="photo-grid">
+  <a class="photo-tile" href="photo-viewer.html#p8"><img class="photo-tile__img" src="img/photo-08.jpg" width="1200" height="900" alt="IMG_20260830_110245.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p9"><img class="photo-tile__img" src="img/photo-09.jpg" width="1200" height="900" alt="id-card-scan.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p10"><img class="photo-tile__img" src="img/photo-10.jpg" width="1200" height="900" alt="IMG_20260816_163002.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p11"><img class="photo-tile__img" src="img/photo-11.jpg" width="750" height="1000" alt="IMG_20260816_162847.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p12"><img class="photo-tile__img" src="img/photo-12.jpg" width="1200" height="900" alt="IMG_20260809_195530.jpg" loading="lazy"></a>
+  <a class="photo-tile" href="photo-viewer.html#p13"><img class="photo-tile__img" src="img/photo-13.jpg" width="1200" height="900" alt="IMG_20260802_081500.jpg" loading="lazy"></a>
+  </div>
+</section>
+</main>
+</div>
+<nav class="tabbar" aria-label="Main">
+  <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
+  <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
+  <button class="tabbar__tab tabbar__tab--active" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
+</nav>
+
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-more-title">More</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sheet__item" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sheet__item" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sheet__item" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+    <li><a class="sheet__item" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sheet__item" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-photos-menu" aria-labelledby="sheet-photos-menu-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-photos-menu-title">Photos</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Select mode is not in the mockups"><span class="icon icon--check icon--sm" aria-hidden="true"></span>Select</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>

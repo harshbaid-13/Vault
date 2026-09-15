@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Links · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="app">
+<a class="skip-link" href="#main">Skip to content</a>
+<nav class="sidebar" aria-label="Sections">
+  <p class="sidebar__mark">My Vault</p>
+  <button class="btn btn--primary sidebar__upload" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button>
+  <ul class="sidebar__list">
+    <li><a class="sidebar__link" href="home.html"><span class="icon icon--house icon--sm" aria-hidden="true"></span>Home</a></li>
+    <li><a class="sidebar__link" href="files.html"><span class="icon icon--folder icon--sm" aria-hidden="true"></span>Files</a></li>
+    <li><a class="sidebar__link" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sidebar__link" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sidebar__link" href="clipboard.html"><span class="icon icon--clipboard icon--sm" aria-hidden="true"></span>Clipboard</a></li>
+    <li><a class="sidebar__link sidebar__link--active" href="links.html" aria-current="page"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sidebar__link" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+  </ul>
+  <ul class="sidebar__list sidebar__foot">
+    <li><a class="sidebar__link" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sidebar__link" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+</nav>
+<div class="app__main">
+<header class="topbar">
+  <h1 class="topbar__title">Links</h1>
+  <form class="search-field topbar__search desktop-only" action="search.html" role="search">
+    <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
+    <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
+  </form>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="search.html" aria-label="Search"><span class="icon icon--search" aria-hidden="true"></span></a><button class="btn btn--secondary" type="button" data-toast="The link form is not in the mockups" aria-label="New link"><span class="icon icon--plus icon--sm" aria-hidden="true"></span>New</button></div>
+</header>
+<main class="page" id="main">
+<h2 class="visually-hidden">Saved links</h2>
+<ul class="list">
+<li class="row" data-type="link">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="http://192.168.1.1" target="_blank" rel="noopener noreferrer">Router admin</a>
+    <span class="row__meta"><span class="mono">192.168.1.1</span> · Sep 3</span>
+  </div>
+  <span class="pin-mark" aria-label="Favorite"><span class="icon icon--star-filled icon--sm" aria-hidden="true"></span></span>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Router admin" data-copy="http://192.168.1.1" aria-haspopup="dialog" aria-label="More actions for Router admin"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="link">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="https://portal.example.com/pay" target="_blank" rel="noopener noreferrer">Electricity bill portal</a>
+    <span class="row__meta"><span class="mono">portal.example.com</span> · Aug 30</span>
+    <span class="row__meta">Consumer no. is in Clipboard</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Electricity bill portal" data-copy="https://portal.example.com/pay" aria-haspopup="dialog" aria-label="More actions for Electricity bill portal"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="link">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener noreferrer">Tailscale admin console</a>
+    <span class="row__meta"><span class="mono">login.tailscale.com</span> · Aug 22</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Tailscale admin console" data-copy="https://login.tailscale.com/admin/machines" aria-haspopup="dialog" aria-label="More actions for Tailscale admin console"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="link">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="https://www.passportindia.gov.in" target="_blank" rel="noopener noreferrer">Passport Seva</a>
+    <span class="row__meta"><span class="mono">passportindia.gov.in</span> · Aug 21</span>
+    <span class="row__meta">Renewal steps are in Notes</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Passport Seva" data-copy="https://www.passportindia.gov.in" aria-haspopup="dialog" aria-label="More actions for Passport Seva"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="link">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="https://www.irctc.co.in" target="_blank" rel="noopener noreferrer">Train tickets</a>
+    <span class="row__meta"><span class="mono">irctc.co.in</span> · Jul 14</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Train tickets" data-copy="https://www.irctc.co.in" aria-haspopup="dialog" aria-label="More actions for Train tickets"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+</ul>
+</main>
+</div>
+<nav class="tabbar" aria-label="Main">
+  <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
+  <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
+  <button class="tabbar__tab tabbar__tab--active" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
+</nav>
+
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-more-title">More</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sheet__item" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sheet__item" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sheet__item" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+    <li><a class="sheet__item" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sheet__item" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-link" aria-labelledby="sheet-link-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-link-title">Link</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="copy"><span class="icon icon--copy icon--sm" aria-hidden="true"></span>Copy URL</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="The link form is not in the mockups"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Edit</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>

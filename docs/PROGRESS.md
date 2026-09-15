@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** D3 (clickable mockups)
-**Last updated:** 2026-09-12, after D2
+**Current stage:** D4 (design review)
+**Last updated:** 2026-09-14, after D3
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -23,7 +23,7 @@ do not remove it.
 ### Design
 - [x] D1 — UX and screen spec → `docs/DESIGN.md` Part 1
 - [x] D2 — Visual system → `docs/DESIGN.md` Part 2 + `static/css/tokens.css`
-- [ ] D3 — Clickable mockups → `/mockups`
+- [x] D3 — Clickable mockups → `/mockups`
 - [ ] D4 — Design review (repeat until happy)
 - [ ] D5 — Technical plan → `docs/TECH_PLAN.md`
 
@@ -49,12 +49,37 @@ do not remove it.
   radius-by-hierarchy, touch rules, motion, and 15 components with their states.
   Wrote `static/css/tokens.css` (82 custom properties, no selectors) and vendored 31 Lucide
   icons + LICENSE into `static/icons/`.
+- **D3** — 14 static pages in `mockups/`: the 13 from the playbook (`upload-sheet.html` is the
+  upload panel + open action sheet) plus `settings.html`, so More → Settings is not a dead
+  link. Shared `static/css/app.css` (component classes, flat specificity, imports tokens) and
+  `static/js/app.js` (delegated `data-*` handlers, no inline script). Placeholder photos, a
+  bill page image and a sample PDF are generated files in `mockups/img` and `mockups/files`.
+  Checked in headless Firefox: no horizontal scroll, 44px targets and 16px inputs on every
+  page at a true 375px; layouts at 768 and 1280; light and dark; COPY copies the full clip
+  over both the Clipboard API and the plain-http fallback; hidden clips copy unrevealed;
+  sheets, delete confirm, upload panel, viewer, autosave and filters all work. Not yet
+  tried on the real Android phone.
 
 ## Next
-Run stage D3 from `docs/PLAYBOOK.md` (clickable mockups → `/mockups`). Nothing is blocking.
+Run stage D4 from `docs/PLAYBOOK.md`: review the mockups on the phone and the laptop, and
+repeat until happy. Bring the three questions under Known issues.
 
 ## Known issues
-_(none yet — no code exists)_
+- **PDF preview on Android.** Chrome on Android cannot show a PDF inside a page, so the
+  "embedded viewer" in DESIGN §3.4 would be blank on my phone. The mockup shows a page-1
+  image instead, which the real app can only do by rendering it on the server — a new
+  dependency (e.g. `pypdfium2` or poppler). Decide in D4/D5: render page 1, or show the
+  details block with Open/Download only.
+- **Hidden clip content is in the page HTML** (a hidden textarea), because COPY must work
+  without a fetch — an async fetch breaks the plain-http copy fallback. It is masked on
+  screen, never in search snippets. D5 decides whether that is acceptable or whether hidden
+  clips copy via a fetch once HTTPS (S3) makes the async Clipboard API reliable.
+- **Not mocked:** select mode, rename/move/new-link/change-password forms, the clip editor
+  (Edit opens the note editor, same layout), swipe-down to dismiss a sheet, the login
+  error/lockout state, the offline banner, loading skeletons. Search results are static.
+  Those actions show a toast saying so.
+- The photo viewer mockup puts every photo in one page (lazy-loaded). The real viewer
+  should render only the current photo and its neighbours.
 
 ## Decisions log
 Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
@@ -85,3 +110,20 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **D2** — Icons are real Lucide (ISC), fetched once and vendored into `static/icons/` with
   their LICENSE. Nothing is fetched at runtime.
 - **D2** — Dark mode via `prefers-color-scheme` only, no switcher.
+- **D3** — "Copied ✓" holds for 1.5s. DESIGN Part 1 said 2s, Part 2 said 1.5s; Part 2 is the
+  component spec.
+- **D3** — On plain http, COPY still copies (hidden-textarea + `execCommand`), so the
+  "Select to copy" outline state in DESIGN §8.1 is dropped. The long "press and hold" toast
+  only shows if that fallback also fails.
+- **D3** — Toast icons take the toast's text colour. `--c-danger` is under 3:1 on the
+  inverted toast ground in both schemes, so errors are marked by the icon shape.
+- **D3** — Added `--c-on-viewer` to `tokens.css` (text on the always-dark viewer) and
+  `static/icons/star-filled.svg` (Lucide star with a fill) for the "on" state.
+- **D3** — Icons are CSS masks driven by an `--icon` custom property: no inline SVG, no
+  `style=`, and a toggle swaps its icon from CSS alone.
+- **D3** — Sheets and the delete confirm are native `<dialog>` (free focus trap, Escape,
+  focus return). With a mouse, ⋯ opens an anchored popover; the More tab is always a sheet.
+- **D3** — The selected filter chip is ink, not green, to keep the accent for COPY.
+- **D3** — The Files root crumb reads "Files", not "Home" as in the D1 sketch — Home is a tab.
+- **D3** — `html` has scroll padding for the top bar and tab bar, so a focused COPY button
+  never scrolls under either.

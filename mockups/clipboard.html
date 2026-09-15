@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Clipboard · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="app">
+<a class="skip-link" href="#main">Skip to content</a>
+<nav class="sidebar" aria-label="Sections">
+  <p class="sidebar__mark">My Vault</p>
+  <button class="btn btn--primary sidebar__upload" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button>
+  <ul class="sidebar__list">
+    <li><a class="sidebar__link" href="home.html"><span class="icon icon--house icon--sm" aria-hidden="true"></span>Home</a></li>
+    <li><a class="sidebar__link" href="files.html"><span class="icon icon--folder icon--sm" aria-hidden="true"></span>Files</a></li>
+    <li><a class="sidebar__link" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sidebar__link" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sidebar__link sidebar__link--active" href="clipboard.html" aria-current="page"><span class="icon icon--clipboard icon--sm" aria-hidden="true"></span>Clipboard</a></li>
+    <li><a class="sidebar__link" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sidebar__link" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+  </ul>
+  <ul class="sidebar__list sidebar__foot">
+    <li><a class="sidebar__link" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sidebar__link" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+</nav>
+<div class="app__main">
+<header class="topbar">
+  <h1 class="topbar__title">Clipboard</h1>
+  <form class="search-field topbar__search desktop-only" action="search.html" role="search">
+    <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
+    <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
+  </form>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="search.html" aria-label="Search"><span class="icon icon--search" aria-hidden="true"></span></a><a class="btn btn--secondary" href="note-edit.html" aria-label="New clip"><span class="icon icon--plus icon--sm" aria-hidden="true"></span>New</a></div>
+</header>
+<main class="page" id="main">
+<h2 class="visually-hidden">Saved clips</h2>
+<ul class="list">
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">Wi-Fi Password</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="Wi-Fi Password" aria-pressed="true" aria-label="Unfavorite Wi-Fi Password"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn reveal" type="button" data-reveal data-name="Wi-Fi Password" aria-pressed="false" aria-label="Show Wi-Fi Password"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="Wi-Fi Password" aria-haspopup="dialog" aria-label="More actions for Wi-Fi Password"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <p class="clip__masked"><span aria-hidden="true">••••••••</span><span class="visually-hidden">Content hidden</span></p>
+  <pre class="clip__content" hidden>mango-rain-4471</pre>
+  <textarea class="clip__source" hidden readonly>
+mango-rain-4471</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy Wi-Fi Password"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">Bank IFSC code</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="Bank IFSC code" aria-pressed="true" aria-label="Unfavorite Bank IFSC code"><span class="icon" aria-hidden="true"></span></button>
+    
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="Bank IFSC code" aria-haspopup="dialog" aria-label="More actions for Bank IFSC code"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <pre class="clip__content">HDFC0001234</pre>
+  <textarea class="clip__source" hidden readonly>
+HDFC0001234</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy Bank IFSC code"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">UPI ID</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="UPI ID" aria-pressed="false" aria-label="Favorite UPI ID"><span class="icon" aria-hidden="true"></span></button>
+    
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="UPI ID" aria-haspopup="dialog" aria-label="More actions for UPI ID"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <pre class="clip__content">myvault@okicici</pre>
+  <textarea class="clip__source" hidden readonly>
+myvault@okicici</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy UPI ID"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">Electricity consumer no.</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="Electricity consumer no." aria-pressed="false" aria-label="Favorite Electricity consumer no."><span class="icon" aria-hidden="true"></span></button>
+    
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="Electricity consumer no." aria-haspopup="dialog" aria-label="More actions for Electricity consumer no."><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <pre class="clip__content">1234 5678 90</pre>
+  <textarea class="clip__source" hidden readonly>
+1234 5678 90</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy Electricity consumer no."><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">Home address</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="Home address" aria-pressed="false" aria-label="Favorite Home address"><span class="icon" aria-hidden="true"></span></button>
+    
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="Home address" aria-haspopup="dialog" aria-label="More actions for Home address"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <pre class="clip__content clip__content--long">Flat 402, Lakeview Apartments
+14th Cross, Indiranagar
+Bengaluru 560038
+Karnataka, India</pre>
+  <textarea class="clip__source" hidden readonly>
+Flat 402, Lakeview Apartments
+14th Cross, Indiranagar
+Bengaluru 560038
+Karnataka, India</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy Home address"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">SSH key (laptop)</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="SSH key (laptop)" aria-pressed="false" aria-label="Favorite SSH key (laptop)"><span class="icon" aria-hidden="true"></span></button>
+    
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="SSH key (laptop)" aria-haspopup="dialog" aria-label="More actions for SSH key (laptop)"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <pre class="clip__content clip__content--long">ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQoxwGvUY+OSO8Gq295IsWl2wIBxc3O4GaBo8yt6azi2s4cpZHz94Bws4osmxXRyc39cNWGhdhGFvYWJpDzgu6dYkf+exgFI1L1KCe4txckzG0EQupOsVK/BTaO90ZYUd0otVdKV5aNatEs++upRKboiuIuj4pdmFF/eyjsI44r1PXxMYOOtIIzlBmRBA26fGR4LdQNqd/ZeLqpHUkQyM/vo+JQ7+VbeWVZlw4//8jgn4XwQzcHCegKMqubJgQYmGY/3eHQPiN3PECrrgdruKJwETEpFccS28odAD0uOC4Q/iAwy2B6RveoEzXo4GbMidfwymK9Mfsh+sAmVJ9BBztXOD81M5OPQ494JHyFBW7fNAR+sKIxCAgqHnyjCpDh9+bbPY27YrBurAztk9m/qumX3DmhHMePzkQVgWWjTqWOAEStaEPOhHnCNxUEoM8R6t8Noohue/hkpN5Psh5zmgwGBioblpsaXfdug2sp/ulGQ9nulbM3Bs/MTCJciNsLkd2P9/sE3HO3NuMGQym/4rWA/gX7cDZPCpofHs23WbnDyphAPxjQ+3IyHRJbLL1u/7Ijqm3fCcwSzf3DpS8ig+/UA4MlXqA69qHKA71ghTZLxGYEazcPGce8eORP5SYCp4Ua6iVkIVQ70I0q7dQPUNlIaulTHVQ7cDvEgJ1n/+Q/xkSiTaBQyHuWQ== laptop@home</pre>
+  <textarea class="clip__source" hidden readonly>
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQoxwGvUY+OSO8Gq295IsWl2wIBxc3O4GaBo8yt6azi2s4cpZHz94Bws4osmxXRyc39cNWGhdhGFvYWJpDzgu6dYkf+exgFI1L1KCe4txckzG0EQupOsVK/BTaO90ZYUd0otVdKV5aNatEs++upRKboiuIuj4pdmFF/eyjsI44r1PXxMYOOtIIzlBmRBA26fGR4LdQNqd/ZeLqpHUkQyM/vo+JQ7+VbeWVZlw4//8jgn4XwQzcHCegKMqubJgQYmGY/3eHQPiN3PECrrgdruKJwETEpFccS28odAD0uOC4Q/iAwy2B6RveoEzXo4GbMidfwymK9Mfsh+sAmVJ9BBztXOD81M5OPQ494JHyFBW7fNAR+sKIxCAgqHnyjCpDh9+bbPY27YrBurAztk9m/qumX3DmhHMePzkQVgWWjTqWOAEStaEPOhHnCNxUEoM8R6t8Noohue/hkpN5Psh5zmgwGBioblpsaXfdug2sp/ulGQ9nulbM3Bs/MTCJciNsLkd2P9/sE3HO3NuMGQym/4rWA/gX7cDZPCpofHs23WbnDyphAPxjQ+3IyHRJbLL1u/7Ijqm3fCcwSzf3DpS8ig+/UA4MlXqA69qHKA71ghTZLxGYEazcPGce8eORP5SYCp4Ua6iVkIVQ70I0q7dQPUNlIaulTHVQ7cDvEgJ1n/+Q/xkSiTaBQyHuWQ== laptop@home</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy SSH key (laptop)"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">Bill portal password</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="Bill portal password" aria-pressed="false" aria-label="Favorite Bill portal password"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn reveal" type="button" data-reveal data-name="Bill portal password" aria-pressed="false" aria-label="Show Bill portal password"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="Bill portal password" aria-haspopup="dialog" aria-label="More actions for Bill portal password"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <p class="clip__masked"><span aria-hidden="true">••••••••</span><span class="visually-hidden">Content hidden</span></p>
+  <pre class="clip__content" hidden>Voltage!Spring22</pre>
+  <textarea class="clip__source" hidden readonly>
+Voltage!Spring22</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy Bill portal password"><span class="copy-btn__label">COPY</span></button>
+</li>
+<li class="clip" data-type="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="note-edit.html">Office guest Wi-Fi</a></h2>
+    <button class="icon-btn star" type="button" data-star data-name="Office guest Wi-Fi" aria-pressed="false" aria-label="Favorite Office guest Wi-Fi"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn reveal" type="button" data-reveal data-name="Office guest Wi-Fi" aria-pressed="false" aria-label="Show Office guest Wi-Fi"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="Office guest Wi-Fi" aria-haspopup="dialog" aria-label="More actions for Office guest Wi-Fi"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+  <p class="clip__masked"><span aria-hidden="true">••••••••</span><span class="visually-hidden">Content hidden</span></p>
+  <pre class="clip__content" hidden>Guest-7F / welcome2026</pre>
+  <textarea class="clip__source" hidden readonly>
+Guest-7F / welcome2026</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy Office guest Wi-Fi"><span class="copy-btn__label">COPY</span></button>
+</li>
+</ul>
+</main>
+</div>
+<nav class="tabbar" aria-label="Main">
+  <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
+  <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <a class="tabbar__tab tabbar__tab--active" href="clipboard.html" aria-current="page"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
+  <button class="tabbar__tab" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
+</nav>
+
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-more-title">More</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sheet__item" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sheet__item" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sheet__item" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+    <li><a class="sheet__item" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sheet__item" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-clip" aria-labelledby="sheet-clip-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-clip-title">Clip</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="note-edit.html"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Edit</a></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Content hidden"><span class="icon icon--eye-off icon--sm" aria-hidden="true"></span>Hide content</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>

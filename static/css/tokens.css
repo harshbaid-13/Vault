@@ -56,6 +56,7 @@
 
   /* Photo viewer ground — always dark, in both colour schemes. */
   --c-viewer-bg: #0E0E0C;
+  --c-on-viewer: #F2F0E9;        /* chrome and captions on the viewer, 17.0:1 */
 
   /* ---- Typography --------------------------------------------------- */
 

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Photo · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="viewer">
+<div class="viewer__bar viewer-chrome">
+  <a class="icon-btn icon-btn--on-dark" href="photos.html" data-viewer-back aria-label="Back to Photos"><span class="icon icon--chevron-left" aria-hidden="true"></span></a>
+  <div>
+    <button class="icon-btn icon-btn--on-dark star" type="button" data-star data-name="this photo" aria-pressed="false" aria-label="Favorite this photo"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn icon-btn--on-dark" type="button" data-sheet-open="sheet-photo" aria-haspopup="dialog" aria-label="Photo actions"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  </div>
+</div>
+<main class="viewer__track" id="main" tabindex="0" aria-label="Photos, swipe for next">
+  <figure class="viewer__slide" id="p1">
+    <img class="viewer__img" src="img/photo-01.jpg" width="1200" height="900" alt="IMG_20260914_091532.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260914_091532.jpg · Today, 09:15</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p2">
+    <img class="viewer__img" src="img/photo-02.jpg" width="1200" height="900" alt="IMG_20260912_184233.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260912_184233.jpg · Sep 12, 18:42</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p3">
+    <img class="viewer__img" src="img/photo-03.jpg" width="750" height="1000" alt="IMG_20260912_183910.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260912_183910.jpg · Sep 12, 18:39</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p4">
+    <img class="viewer__img" src="img/photo-04.jpg" width="1200" height="900" alt="vacation-goa-03.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">vacation-goa-03.jpg · Sep 11, 12:10</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p5">
+    <img class="viewer__img" src="img/photo-05.jpg" width="1200" height="900" alt="vacation-goa-02.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">vacation-goa-02.jpg · Sep 11, 06:32</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p6">
+    <img class="viewer__img" src="img/photo-06.jpg" width="1200" height="900" alt="vacation-goa-01.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">vacation-goa-01.jpg · Sep 10, 19:05</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="v1">
+    <div class="viewer__video"><span class="icon icon--video icon--lg" aria-hidden="true"></span><p>Videos play in the browser's own player.</p></div>
+    <figcaption class="viewer__caption viewer-chrome">VID_20260911_174502.mp4 · Sep 11, 17:45</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p7">
+    <img class="viewer__img" src="img/photo-07.jpg" width="750" height="1000" alt="IMG_20260905_070112.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260905_070112.jpg · Sep 5, 07:01</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p8">
+    <img class="viewer__img" src="img/photo-08.jpg" width="1200" height="900" alt="IMG_20260830_110245.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260830_110245.jpg · Aug 30, 11:02</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p9">
+    <img class="viewer__img" src="img/photo-09.jpg" width="1200" height="900" alt="id-card-scan.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">id-card-scan.jpg · Aug 30, 10:15</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p10">
+    <img class="viewer__img" src="img/photo-10.jpg" width="1200" height="900" alt="IMG_20260816_163002.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260816_163002.jpg · Aug 16, 16:30</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p11">
+    <img class="viewer__img" src="img/photo-11.jpg" width="750" height="1000" alt="IMG_20260816_162847.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260816_162847.jpg · Aug 16, 16:28</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p12">
+    <img class="viewer__img" src="img/photo-12.jpg" width="1200" height="900" alt="IMG_20260809_195530.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260809_195530.jpg · Aug 9, 19:55</figcaption>
+  </figure>
+  <figure class="viewer__slide" id="p13">
+    <img class="viewer__img" src="img/photo-13.jpg" width="1200" height="900" alt="IMG_20260802_081500.jpg" loading="lazy">
+    <figcaption class="viewer__caption viewer-chrome">IMG_20260802_081500.jpg · Aug 2, 08:15</figcaption>
+  </figure>
+</main>
+<button class="icon-btn icon-btn--on-dark viewer__nav viewer__nav--prev viewer-chrome desktop-only" type="button" data-viewer-step="-1" aria-label="Previous photo"><span class="icon icon--chevron-left" aria-hidden="true"></span></button>
+<button class="icon-btn icon-btn--on-dark viewer__nav viewer__nav--next viewer-chrome desktop-only" type="button" data-viewer-step="1" aria-label="Next photo"><span class="icon icon--chevron-right" aria-hidden="true"></span></button>
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-photo" aria-labelledby="sheet-photo-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-photo-title">IMG_20260914_091532.jpg</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Downloading…"><span class="icon icon--download icon--sm" aria-hidden="true"></span>Download</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Renamed"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>

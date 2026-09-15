@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Upload panel and action sheet · My Vault</title>
+<link rel="stylesheet" href="../static/css/app.css">
+<script src="../static/js/app.js" defer></script>
+</head>
+<body class="app">
+<a class="skip-link" href="#main">Skip to content</a>
+<nav class="sidebar" aria-label="Sections">
+  <p class="sidebar__mark">My Vault</p>
+  <button class="btn btn--primary sidebar__upload" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button>
+  <ul class="sidebar__list">
+    <li><a class="sidebar__link" href="home.html"><span class="icon icon--house icon--sm" aria-hidden="true"></span>Home</a></li>
+    <li><a class="sidebar__link sidebar__link--active" href="files.html" aria-current="page"><span class="icon icon--folder icon--sm" aria-hidden="true"></span>Files</a></li>
+    <li><a class="sidebar__link" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sidebar__link" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sidebar__link" href="clipboard.html"><span class="icon icon--clipboard icon--sm" aria-hidden="true"></span>Clipboard</a></li>
+    <li><a class="sidebar__link" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sidebar__link" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+  </ul>
+  <ul class="sidebar__list sidebar__foot">
+    <li><a class="sidebar__link" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sidebar__link" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+</nav>
+<div class="app__main">
+<header class="topbar">
+  <a class="icon-btn topbar__back" href="files.html" aria-label="Back to Files"><span class="icon icon--chevron-left" aria-hidden="true"></span></a>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a class="breadcrumb__link" href="files.html">Files</a>
+    <span class="icon icon--chevron-right icon--xs breadcrumb__sep" aria-hidden="true"></span>
+    <span class="breadcrumb__current" aria-current="page">Documents</span>
+  </nav>
+  <form class="search-field topbar__search desktop-only" action="search.html" role="search">
+    <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
+    <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
+  </form>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="search.html" aria-label="Search"><span class="icon icon--search" aria-hidden="true"></span></a><button class="btn btn--primary desktop-only" type="button" data-upload><span class="icon icon--upload icon--sm" aria-hidden="true"></span>Upload</button><button class="icon-btn" type="button" data-sheet-open="sheet-files-menu" aria-haspopup="dialog" aria-label="Folder actions"><span class="icon icon--ellipsis" aria-hidden="true"></span></button></div>
+</header>
+<main class="page" id="main">
+<div class="toolbar">
+  <button class="btn btn--ghost" type="button" data-sheet-open="sheet-sort" aria-haspopup="dialog">Name <span class="icon icon--chevron-down icon--sm" aria-hidden="true"></span></button>
+  <span class="toolbar__count">3 folders · 5 files</span>
+</div>
+<h2 class="visually-hidden">Contents of Documents</h2>
+<ul class="list">
+<li class="row" data-type="file">
+  <span class="icon icon--folder row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="files.html">Bills</a>
+    <span class="row__meta row__meta--data">8 items</span>
+  </div>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-folder" data-sheet-title="Bills" aria-haspopup="dialog" aria-label="More actions for Bills"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--folder row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="files.html">Insurance</a>
+    <span class="row__meta row__meta--data">3 items</span>
+  </div>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-folder" data-sheet-title="Insurance" aria-haspopup="dialog" aria-label="More actions for Insurance"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--folder row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="files.html">Tax 2026</a>
+    <span class="row__meta row__meta--data">12 items</span>
+  </div>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-folder" data-sheet-title="Tax 2026" aria-haspopup="dialog" aria-label="More actions for Tax 2026"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="preview-pdf.html"><span class="name"><span class="name__head">electricity-bill</span><span class="name__tail">-aug.pdf</span></span></a>
+    <span class="row__meta row__meta--data">186 KB · Yesterday</span>
+  </div>
+  <span class="pin-mark" aria-label="Favorite"><span class="icon icon--star-filled icon--sm" aria-hidden="true"></span></span>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-aug.pdf" aria-haspopup="dialog" aria-label="More actions for electricity-bill-aug.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="preview-pdf.html"><span class="name"><span class="name__head">electricity-bill</span><span class="name__tail">-jul.pdf</span></span></a>
+    <span class="row__meta row__meta--data">179 KB · Aug 12</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-jul.pdf" aria-haspopup="dialog" aria-label="More actions for electricity-bill-jul.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <img class="row__thumb" src="img/photo-09.jpg" alt="" width="40" height="40" loading="lazy">
+  <div class="row__body">
+    <a class="row__title row__link" href="photo-viewer.html#p9"><span class="name"><span class="name__head">id-card-</span><span class="name__tail">scan.jpg</span></span></a>
+    <span class="row__meta row__meta--data">1.2 MB · Aug 30</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="id-card-scan.jpg" aria-haspopup="dialog" aria-label="More actions for id-card-scan.jpg"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="preview-pdf.html"><span class="name"><span class="name__head">pass</span><span class="name__tail">port.pdf</span></span></a>
+    <span class="row__meta row__meta--data">2.4 MB · Aug 21</span>
+  </div>
+  <span class="pin-mark" aria-label="Favorite"><span class="icon icon--star-filled icon--sm" aria-hidden="true"></span></span>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="passport.pdf" aria-haspopup="dialog" aria-label="More actions for passport.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+<li class="row" data-type="file">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="preview-pdf.html"><span class="name"><span class="name__head">rent-agreement-2026-ren</span><span class="name__tail">ewal.pdf</span></span></a>
+    <span class="row__meta row__meta--data">1.1 MB · Apr 3</span>
+  </div>
+  
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="rent-agreement-2026-renewal.pdf" aria-haspopup="dialog" aria-label="More actions for rent-agreement-2026-renewal.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+</li>
+</ul>
+</main>
+</div>
+<nav class="tabbar" aria-label="Main">
+  <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
+  <a class="tabbar__tab tabbar__tab--active" href="files.html" aria-current="page"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
+  <button class="tabbar__tab" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
+</nav>
+<section class="upload-panel" id="upload-panel" aria-label="Uploads">
+  <div class="upload-panel__head">
+    <h2 class="upload-panel__title" data-upload-title>Uploading 4 of 6</h2>
+    <button class="icon-btn upload-panel__toggle" type="button" data-upload-toggle aria-expanded="true" aria-label="Collapse uploads"><span class="icon icon--chevron-down" aria-hidden="true"></span></button>
+    <button class="icon-btn" type="button" data-upload-dismiss aria-label="Dismiss uploads" hidden><span class="icon icon--x" aria-hidden="true"></span></button>
+  </div>
+  <ul class="upload-panel__list" data-upload-list>
+    <li class="upload-row" data-name="IMG_20260914_091532.jpg" data-size="4299161" data-state="done" data-progress="0">
+      <span class="icon icon--check icon--sm upload-row__status upload-row__status--done" aria-hidden="true"></span>
+      <div class="upload-row__body">
+        <div class="upload-row__line"><span class="name upload-row__name"><span class="name__head">IMG_20260914_09</span><span class="name__tail">1532.jpg</span></span><span class="upload-row__size">4.1 MB</span></div>
+        <progress class="progress" max="100" value="0" hidden></progress>
+        <span class="upload-row__note">Uploaded</span>
+      </div>
+      <div class="upload-row__action"></div>
+    </li>
+    <li class="upload-row" data-name="backup-old-laptop.zip" data-size="2791728742" data-state="failed" data-progress="0" data-error="Too large (max 2 GB)" data-final="true">
+      <span class="icon icon--circle-alert icon--sm upload-row__status upload-row__status--failed" aria-hidden="true"></span>
+      <div class="upload-row__body">
+        <div class="upload-row__line"><span class="name upload-row__name"><span class="name__head">backup-old-la</span><span class="name__tail">ptop.zip</span></span><span class="upload-row__size">2.6 GB</span></div>
+        <progress class="progress" max="100" value="0" hidden></progress>
+        <span class="upload-row__note upload-row__note--error">Too large (max 2 GB)</span>
+      </div>
+      <div class="upload-row__action"></div>
+    </li>
+    <li class="upload-row" data-name="electricity-bill-sep.pdf" data-size="194560" data-state="failed" data-progress="0" data-error="Connection lost">
+      <span class="icon icon--circle-alert icon--sm upload-row__status upload-row__status--failed" aria-hidden="true"></span>
+      <div class="upload-row__body">
+        <div class="upload-row__line"><span class="name upload-row__name"><span class="name__head">electricity-bill</span><span class="name__tail">-sep.pdf</span></span><span class="upload-row__size">190 KB</span></div>
+        <progress class="progress" max="100" value="0" hidden></progress>
+        <span class="upload-row__note upload-row__note--error">Connection lost</span>
+      </div>
+      <div class="upload-row__action"><button class="btn btn--ghost" type="button" data-upload-retry>Retry</button></div>
+    </li>
+    <li class="upload-row" data-name="IMG_20260914_091610.jpg" data-size="3984588" data-state="uploading" data-progress="62">
+      <span class="icon icon--loader-circle icon--sm upload-row__status upload-row__status--uploading icon--spin" aria-hidden="true"></span>
+      <div class="upload-row__body">
+        <div class="upload-row__line"><span class="name upload-row__name"><span class="name__head">IMG_20260914_09</span><span class="name__tail">1610.jpg</span></span><span class="upload-row__size">3.8 MB</span></div>
+        <progress class="progress" max="100" value="62"></progress>
+        <span class="upload-row__note">62%</span>
+      </div>
+      <div class="upload-row__action"><button class="icon-btn" type="button" aria-label="Cancel IMG_20260914_091610.jpg" data-upload-cancel><span class="icon icon--x" aria-hidden="true"></span></button></div>
+    </li>
+    <li class="upload-row" data-name="scan-rent-receipt.pdf" data-size="512000" data-state="waiting" data-progress="0">
+      <span class="icon icon--file icon--sm upload-row__status upload-row__status--waiting" aria-hidden="true"></span>
+      <div class="upload-row__body">
+        <div class="upload-row__line"><span class="name upload-row__name"><span class="name__head">scan-rent-rec</span><span class="name__tail">eipt.pdf</span></span><span class="upload-row__size">500 KB</span></div>
+        <progress class="progress" max="100" value="0" hidden></progress>
+        <span class="upload-row__note">Waiting</span>
+      </div>
+      <div class="upload-row__action"><button class="icon-btn" type="button" aria-label="Cancel scan-rent-receipt.pdf" data-upload-cancel><span class="icon icon--x" aria-hidden="true"></span></button></div>
+    </li>
+    <li class="upload-row" data-name="VID_20260914_092001.mp4" data-size="50331648" data-state="waiting" data-progress="0">
+      <span class="icon icon--file icon--sm upload-row__status upload-row__status--waiting" aria-hidden="true"></span>
+      <div class="upload-row__body">
+        <div class="upload-row__line"><span class="name upload-row__name"><span class="name__head">VID_20260914_09</span><span class="name__tail">2001.mp4</span></span><span class="upload-row__size">48 MB</span></div>
+        <progress class="progress" max="100" value="0" hidden></progress>
+        <span class="upload-row__note">Waiting</span>
+      </div>
+      <div class="upload-row__action"><button class="icon-btn" type="button" aria-label="Cancel VID_20260914_092001.mp4" data-upload-cancel><span class="icon icon--x" aria-hidden="true"></span></button></div>
+    </li>
+  </ul>
+</section>
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-more-title">More</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="photos.html"><span class="icon icon--image icon--sm" aria-hidden="true"></span>Photos</a></li>
+    <li><a class="sheet__item" href="notes.html"><span class="icon icon--file-text icon--sm" aria-hidden="true"></span>Notes</a></li>
+    <li><a class="sheet__item" href="links.html"><span class="icon icon--link icon--sm" aria-hidden="true"></span>Links</a></li>
+    <li><a class="sheet__item" href="favorites.html"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorites</a></li>
+    <li><a class="sheet__item" href="settings.html"><span class="icon icon--settings icon--sm" aria-hidden="true"></span>Settings</a></li>
+    <li><a class="sheet__item" href="login.html"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</a></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title" data-open-on-load>
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-file-title">passport.pdf</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Renamed"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Moved to Documents"><span class="icon icon--folder-input icon--sm" aria-hidden="true"></span>Move</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Downloading…"><span class="icon icon--download icon--sm" aria-hidden="true"></span>Download</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-folder" aria-labelledby="sheet-folder-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-folder-title">Folder</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Renamed"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Moved to Files"><span class="icon icon--folder-input icon--sm" aria-hidden="true"></span>Move</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-sort" aria-labelledby="sheet-sort-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-sort-title">Sort by</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Sorted by name"><span class="icon icon--check icon--sm" aria-hidden="true"></span>Name</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Sorted by date added"><span class="sheet__spacer" aria-hidden="true"></span>Date added</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Sorted by size"><span class="sheet__spacer" aria-hidden="true"></span>Size</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Sorted by type"><span class="sheet__spacer" aria-hidden="true"></span>Type</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-files-menu" aria-labelledby="sheet-files-menu-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-files-menu-title">Documents</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Folder created"><span class="icon icon--folder-plus icon--sm" aria-hidden="true"></span>New folder</button></li>
+    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Select mode is not in the mockups"><span class="icon icon--check icon--sm" aria-hidden="true"></span>Select</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>
