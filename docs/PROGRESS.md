@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** D4 (design review) — round 1 done, waiting for phone feedback
-**Last updated:** 2026-09-15, after D4 round 1
+**Current stage:** S1 (walking skeleton) — not started; D5 plan waiting for review
+**Last updated:** 2026-09-15, after D5
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -24,21 +24,34 @@ do not remove it.
 - [x] D1 — UX and screen spec → `docs/DESIGN.md` Part 1
 - [x] D2 — Visual system → `docs/DESIGN.md` Part 2 + `static/css/tokens.css`
 - [x] D3 — Clickable mockups → `/mockups`
-- [ ] D4 — Design review (repeat until happy)
-- [ ] D5 — Technical plan → `docs/TECH_PLAN.md`
+- [x] D4 — Design review (repeat until happy)
+- [x] D5 — Technical plan → `docs/TECH_PLAN.md`
 
 ### Build
-- [ ] S1 — Walking skeleton (Docker, layout, DB, health check)
-- [ ] S2 — Login and logout
-- [ ] S3 — Phone access over Tailscale HTTPS → `docs/TAILSCALE.md`
-- [ ] S4 — Clipboard with COPY *(reference implementation)*
-- [ ] S5 — Notes and Links
-- [ ] S6 — Files: upload, download, rename, delete
-- [ ] S7 — Folders, move, sort
-- [ ] S8 — Previews, thumbnails, Photos gallery
-- [ ] S9 — Home dashboard, Favorites, universal search
-- [ ] S10 — Backup, restore, README
-- [ ] S11 — Hardening and final checks
+Each stage: its playbook prompt, adjusted by `docs/TECH_PLAN.md` §9. Tests pass and the app
+runs at the end of every one.
+- [ ] S1 — Walking skeleton: config (refuses bad SESSION_SECRET), db + `001_initial.sql`,
+      base layout from the mockups, `/healthz`, security headers, 404/500, Dockerfile (uid
+      1000, tzdata), compose (127.0.0.1, ./data, ./backups), `.env.example`, conftest
+- [ ] S2 — Login: `cli set-password`, Argon2id, session + session_version, auth allowlist,
+      global lockout, Origin check, safe `next`, logout, Change password in Settings
+- [ ] S3 — Phone access: `docs/TAILSCALE.md` (fetched install steps), `tailscale serve`,
+      Secure cookie + allowed origin, Settings shows HTTPS ✓ / Clipboard ✓, 2 GB upload probe
+- [ ] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
+      delete, COPY from `.clip__source`; "How a feature is structured" into `CLAUDE.md`
+- [ ] S5 — Notes (editor, autosave on hide/leave, discard empty) and Links (URL rules, form)
+- [ ] S6 — Files: raw-body streaming upload (2 parallel), panel, download/view allowlist,
+      Range 206, rename, favorite, delete, `?partial=1` refresh
+- [ ] S7 — Folders: tree, breadcrumb, create/rename/delete with counts, move picker, select
+      mode (Move/Delete), per-folder sort
+- [ ] S8 — Thumbnails (EXIF, bomb limit, HEIC-safe), preview page per kind (PDF iframe on
+      desktop, Open/Download on phone), Photos grid by month, viewer with neighbours
+- [ ] S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial +
+      `/api/search`, LIKE escaping, hidden clips title-only
+- [ ] S10 — `app.backup` (backup API, integrity check, `.tar`, keep 3, space check),
+      `app.restore`, `backup.sh`, cron, README
+- [ ] S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files,
+      fresh-install run of the README
 
 ## Done so far
 - **D1** — `docs/DESIGN.md` Part 1: UX. Navigation, 14 screens with 375px sketches,
@@ -66,31 +79,26 @@ do not remove it.
   Home vs "Favorites" everywhere else; back button + breadcrumb trail both going up on a phone;
   a scope toggle on a search opened from Home; the "Uploaded" toast landing on the upload
   panel; a gap splitting each clip's title from its text (clip rows 155 → 143px); a gear icon
-  on Change password. `docs/DESIGN.md` updated to match. Still not tried on the phone.
+  on Change password. `docs/DESIGN.md` updated to match. Phone check: "all working great".
+- **D5** — `docs/TECH_PLAN.md`: folder structure (one module per feature, SQL → pages → API),
+  STRICT SQLite schema, page + JSON route tables, `.env` settings, 22-item security
+  checklist mapped to code and tests, pytest fixtures, reliability rules, 21 gotchas, and a
+  table of every place the plan departs from the playbook briefs (§9). Settles the three D3
+  questions and the D4 "See all" question. No app code, no new dependencies.
 
 ## Next
-D4 round 2: open the mockups on the Android phone and the laptop, write down what felt wrong,
-slow, ugly or confusing, and bring it back with answers to the questions under Known issues.
+Review `docs/TECH_PLAN.md` §8 and §9 (the departures from the playbook). Then run S1 from
+`docs/PLAYBOOK.md`.
 
 ## Known issues
-- **"See all" on Home's Recent has nowhere to go.** Recent mixes files, notes and clips, but
-  it links to Files (sorted by name). DESIGN §4 relies on it for "find a PDF from last week".
-  Decide in D4: drop the link, or add a plain newest-first "Recent" list page (a 15th screen).
-- **PDF preview on Android.** Chrome on Android cannot show a PDF inside a page, so the
-  "embedded viewer" in DESIGN §3.4 would be blank on my phone. The mockup shows a page-1
-  image instead, which the real app can only do by rendering it on the server — a new
-  dependency (e.g. `pypdfium2` or poppler). Decide in D4/D5: render page 1, or show the
-  details block with Open/Download only.
-- **Hidden clip content is in the page HTML** (a hidden textarea), because COPY must work
-  without a fetch — an async fetch breaks the plain-http copy fallback. It is masked on
-  screen, never in search snippets. D5 decides whether that is acceptable or whether hidden
-  clips copy via a fetch once HTTPS (S3) makes the async Clipboard API reliable.
-- **Not mocked:** select mode, rename/move/new-link/change-password forms, the clip editor
-  (Edit opens the note editor, same layout), swipe-down to dismiss a sheet, the login
-  error/lockout state, the offline banner, loading skeletons. Search results are static.
-  Those actions show a toast saying so.
-- The photo viewer mockup puts every photo in one page (lazy-loaded). The real viewer
-  should render only the current photo and its neighbours.
+- **Not mocked, designed in the stage that builds them:** select mode, rename/move/new-link/
+  change-password forms, swipe-down to dismiss a sheet, the login error/lockout state, the
+  offline banner, loading skeletons.
+- **Mockups vs plan:** the D3 PDF mockup shows a page-1 image and a video tile shows a
+  duration; the real app shows neither (TECH_PLAN §9). The mockups are not updated.
+- **To verify, not assumed:** Starlette `FileResponse` Range support (S6), `tailscale serve`
+  passing a 2 GB body (S3/S6), zone files in `python:3.12-slim` (S1), Chrome rendering the
+  PDF iframe without a sandbox CSP (S8).
 
 ## Decisions log
 Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
@@ -152,3 +160,9 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **D4** — No "Uploaded" toast; the panel's "All uploaded" title is the confirmation.
 - **D4** — PDF preview image is capped at 42dvh on a phone so Download is on the first screen.
 - **D4** — The PDF preview's ⋯ sheet drops Download (it is the page's main button).
+- **D5** — Every departure from the playbook briefs is in `docs/TECH_PLAN.md` §9 rather than
+  repeated here. The big ones: `favorite` column (not `pinned`); one raw-body request per
+  uploaded file (not multipart); global login lockout (all requests share the proxy's
+  address); upload panel does not survive leaving the page; `BACKUP_KEEP=3` and `.tar`;
+  PDF on phone = Open/Download, no page-1 render; hidden clip content stays in the page;
+  "See all" on Recent removed; Change password also in Settings.

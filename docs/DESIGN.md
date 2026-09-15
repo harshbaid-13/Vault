@@ -142,7 +142,8 @@ pin, what arrived recently.
 **On it:** Favorites section (mixed types, max 6), Recent section (mixed types, max 10),
 search, upload.
 **Primary:** whatever the row is — COPY for a clip, open for a file.
-**Secondary:** "See all" on each section heading.
+**Secondary:** "See all" on the Favorites heading. Recent has none — there is no Recent page;
+an older file is found with search or Files sorted by Date added (D5).
 **Empty state:** *"Nothing here yet. Tap ＋ to add your first file, or save a clip you copy
 often."*
 
@@ -209,13 +210,16 @@ Two lines per row, not a table. Tables do not survive 375px. Sort options: Name,
 added, Size, Type — the choice sticks per folder.
 
 **Select mode** (desktop: click checkboxes; mobile: header ⋯ → Select) turns the header
-into a count and the bottom bar into Move / Download / Delete.
+into a count and the bottom bar into Move / Delete. (Download of many files at once would
+need a zip builder; files download one at a time — D5.)
 
 ### 3.4 File preview
 
 **Purpose:** see enough to know it is the right file, then act.
 **On it:** filename, type, size, upload date, the preview itself, action row.
-**Preview by type:** image → the image; PDF → embedded viewer; text/markdown/code → plain
+**Preview by type:** image → the image; PDF → embedded viewer on desktop, and on a phone
+the details block with **Download** and **Open PDF** (Chrome on Android cannot show a PDF
+inside a page, and rendering page 1 on the server would need a new dependency — D5); text/markdown/code → plain
 text in a scroll box with a Copy button; video/audio → the browser's own player; everything
 else → a large type icon and the file's details.
 **Primary:** Download. **Secondary:** Favorite, Rename, Move, Delete, Copy name.
@@ -282,7 +286,7 @@ Photos are files — the same rows that appear in Files. This is a view, not a s
 store. A photo inside a folder still appears here.
 
 **Videos** appear in this grid too, but with no generated thumbnail — a video icon with a
-play badge and the duration, on a plain tile. Real video thumbnails need ffmpeg in the
+play badge on a plain tile. (No duration: reading it needs ffmpeg too — D5.) Real video thumbnails need ffmpeg in the
 Docker image, which is a large dependency for a nicety; it is in `docs/BACKLOG.md`.
 
 Image thumbnails are **EXIF-rotated** when generated. Phone cameras — Android included —
@@ -519,8 +523,9 @@ per file: name, size, progress bar, ✓ or ✕. A header with "Uploading 2 of 5"
 collapse chevron.
 **Primary:** none — it is passive. **Secondary:** Retry on a failed row, ✕ to cancel one,
 Dismiss when all are done.
-**Behaviour:** navigation continues freely while it runs; it survives moving between
-screens. It auto-dismisses a few seconds after everything succeeds, and stays put if
+**Behaviour:** the page stays usable while it runs. Pages are real page loads, so leaving
+the page would cancel the upload: while anything is uploading, leaving asks first (D5 —
+surviving navigation would need a single-page app). It auto-dismisses a few seconds after everything succeeds, and stays put if
 anything failed.
 **Empty state:** n/a.
 
