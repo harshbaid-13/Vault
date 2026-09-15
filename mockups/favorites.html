@@ -74,7 +74,7 @@ HDFC0001234</textarea>
     <span class="row__meta row__meta--data">2.4 MB · Aug 21</span>
   </div>
   
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="passport.pdf" aria-haspopup="dialog" aria-label="More actions for passport.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="passport.pdf" data-favorite aria-haspopup="dialog" aria-label="More actions for passport.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 <li class="row" data-type="file">
   <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
@@ -83,7 +83,7 @@ HDFC0001234</textarea>
     <span class="row__meta row__meta--data">186 KB · Yesterday</span>
   </div>
   
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-aug.pdf" aria-haspopup="dialog" aria-label="More actions for electricity-bill-aug.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-aug.pdf" data-favorite aria-haspopup="dialog" aria-label="More actions for electricity-bill-aug.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 <li class="row" data-type="note">
   <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
@@ -92,7 +92,7 @@ HDFC0001234</textarea>
     <span class="row__meta">Yesterday · milk, bread, coffee, eggs</span>
   </div>
   
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-note" data-sheet-title="Shopping list" aria-haspopup="dialog" aria-label="More actions for Shopping list"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-note" data-sheet-title="Shopping list" data-favorite aria-haspopup="dialog" aria-label="More actions for Shopping list"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 <li class="row" data-type="note">
   <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
@@ -101,7 +101,7 @@ HDFC0001234</textarea>
     <span class="row__meta">Aug 21 · 1. Fill the form on the Passport Seva site</span>
   </div>
   
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-note" data-sheet-title="Passport renewal steps" aria-haspopup="dialog" aria-label="More actions for Passport renewal steps"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-note" data-sheet-title="Passport renewal steps" data-favorite aria-haspopup="dialog" aria-label="More actions for Passport renewal steps"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 <li class="row" data-type="link">
   <span class="icon icon--link row__icon" aria-hidden="true"></span>
@@ -110,7 +110,7 @@ HDFC0001234</textarea>
     <span class="row__meta"><span class="mono">192.168.1.1</span> · Sep 3</span>
   </div>
   
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Router admin" data-copy="http://192.168.1.1" aria-haspopup="dialog" aria-label="More actions for Router admin"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Router admin" data-favorite data-copy="http://192.168.1.1" aria-haspopup="dialog" aria-label="More actions for Router admin"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 </ul>
 <div class="empty" id="fav-list-empty" hidden>
@@ -122,7 +122,7 @@ HDFC0001234</textarea>
 <nav class="tabbar" aria-label="Main">
   <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
   <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
-  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--upload" aria-hidden="true"></span></button></div>
   <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
   <button class="tabbar__tab tabbar__tab--active" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
 </nav>
@@ -147,7 +147,7 @@ HDFC0001234</textarea>
   <ul class="sheet__list">
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="Renamed"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Rename</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="Moved to Documents"><span class="icon icon--folder-input icon--sm" aria-hidden="true"></span>Move</button></li>
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="Downloading…"><span class="icon icon--download icon--sm" aria-hidden="true"></span>Download</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
@@ -157,7 +157,7 @@ HDFC0001234</textarea>
   <span class="sheet__handle" aria-hidden="true"></span>
   <p class="sheet__title" id="sheet-note-title">Note</p>
   <ul class="sheet__list">
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
@@ -168,7 +168,7 @@ HDFC0001234</textarea>
   <ul class="sheet__list">
     <li><button class="sheet__item" type="button" data-action="copy"><span class="icon icon--copy icon--sm" aria-hidden="true"></span>Copy URL</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="The link form is not in the mockups"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Edit</button></li>
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>

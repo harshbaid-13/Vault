@@ -55,7 +55,8 @@ A fixed bottom tab bar, five slots, on every screen except Login and the Photo v
 - **Home · Files · ＋ · Clipboard · More**
 - `＋` is a raised circular button, visually distinct from the four tabs. It is an action,
   not a destination — it opens the upload sheet over whatever screen you are on, and the
-  screen behind it does not change.
+  screen behind it does not change. It carries an upload arrow, not a plus sign, so it is
+  never confused with the `＋ New` button in the Notes, Clipboard and Links headers.
 - **More** opens a bottom sheet: Photos · Notes · Links · Favorites · Settings · Log out.
 - The bar sits above the iPhone home indicator (safe-area inset). Each tab is at least
   44×44px; the `＋` button is 56px.
@@ -138,7 +139,7 @@ else was the problem.
 
 **Purpose:** answer three questions without a single tap — what can I copy, what did I
 pin, what arrived recently.
-**On it:** Pinned section (mixed types, max 6), Recent section (mixed types, max 10),
+**On it:** Favorites section (mixed types, max 6), Recent section (mixed types, max 10),
 search, upload.
 **Primary:** whatever the row is — COPY for a clip, open for a file.
 **Secondary:** "See all" on each section heading.
@@ -149,7 +150,7 @@ often."*
 ┌─────────────────────────────┐
 │ MY VAULT              🔍    │
 ├─────────────────────────────┤
-│ PINNED                      │
+│ FAVORITES                   │
 │ ┌─────────────────────────┐ │
 │ │ ▣ Wi-Fi Password        │ │
 │ │ ••••••         [ COPY ] │ │
@@ -170,8 +171,9 @@ often."*
 └─────────────────────────────┘
 ```
 
-Pinned comes first because a pinned item is something I chose; Recent is only the machine
-guessing.
+Favorites come first because a favorite is something I chose; Recent is only the machine
+guessing. The section is called Favorites, not Pinned, so the ★ everywhere, the Favorites
+page and this heading all use one word.
 
 ### 3.3 Files (inside a folder)
 
@@ -451,7 +453,7 @@ No favicons — that would mean fetching from the internet at runtime, which is 
 
 ### 3.11 Favorites
 
-**Purpose:** everything I pinned, in one place, regardless of type.
+**Purpose:** everything I starred, in one place, regardless of type.
 **On it:** the same rows used elsewhere — a clip row keeps its COPY button, a file row
 opens a preview, a link opens the URL. Optional type filter chips across the top.
 **Primary:** the row's own action. **Secondary:** ⋯ (including Unfavorite).
@@ -482,7 +484,8 @@ opens a preview, a link opens the URL. Optional type filter chips across the top
 type after 2 characters.
 **Primary:** the row's own action — a clip found in search still copies from the results
 list, without opening it.
-**Secondary:** the Everywhere / this-section toggle; filter chips.
+**Secondary:** the Everywhere / this-section toggle, shown only when search was opened from
+a section (never from Home, where there is no section to narrow to); filter chips.
 **Empty state (no query):** recent searches, or nothing at all.
 **Empty state (no results):** *"Nothing matches "lease". Try part of a filename or a
 word from the text."*
@@ -593,14 +596,14 @@ logging in is rare.
 2. Tap **Photo Library** (or **Camera** to shoot one now) in the phone's own sheet.
 3. Select the photo(s) — one tap each.
 4. Tap **Add**.
-→ The upload panel appears, the app stays where it was, a toast confirms *Uploaded*. The
+→ The upload panel appears, the app stays where it was, its title ends on *All uploaded*. The
 photo is at the top of Home's Recent and the Photos grid immediately.
 
 ### Copy Wi-Fi password on phone — 2 taps
 
 1. Tap **Clipboard** in the bottom bar.
 2. Tap **COPY** on the Wi-Fi Password row.
-→ *Copied ✓*. The password was never shown on screen. If it is pinned, it is also on Home,
+→ *Copied ✓*. The password was never shown on screen. If it is a favorite, it is also on Home,
 which makes it 2 taps from the app opening, or 1 if Home is already showing.
 
 ### Save a link from phone — 5 taps
@@ -648,7 +651,7 @@ again. Deleting a non-empty folder says how much is inside: *"Delete 'Tax 2025' 
 items in it?"*
 
 **Toasts.** Bottom of the screen, above the tab bar, two seconds, one line, never stacked —
-a new one replaces the old. *Copied ✓* · *Uploaded* · *Deleted* · *Moved to Documents* ·
+a new one replaces the old. *Copied ✓* · *Deleted* · *Moved to Documents* ·
 *Renamed*. A toast never carries the only copy of important information, and never asks a
 question.
 

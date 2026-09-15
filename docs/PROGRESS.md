@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** D4 (design review)
-**Last updated:** 2026-09-14, after D3
+**Current stage:** D4 (design review) — round 1 done, waiting for phone feedback
+**Last updated:** 2026-09-15, after D4 round 1
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -59,12 +59,23 @@ do not remove it.
   over both the Clipboard API and the plain-http fallback; hidden clips copy unrevealed;
   sheets, delete confirm, upload panel, viewer, autosave and filters all work. Not yet
   tried on the real Android phone.
+- **D4 round 1** — Claude's own review at a true 375px (light and dark, headless Firefox via
+  geckodriver). Fixed: Download on the PDF preview was hidden under the tab bar; the ＋ upload
+  button looked like "New"; stars on every clip row; ★ repeated in the header and the ⋯ sheet
+  on detail screens; sheets said "Favorite" / "Hide content" even when already on; "Pinned" on
+  Home vs "Favorites" everywhere else; back button + breadcrumb trail both going up on a phone;
+  a scope toggle on a search opened from Home; the "Uploaded" toast landing on the upload
+  panel; a gap splitting each clip's title from its text (clip rows 155 → 143px); a gear icon
+  on Change password. `docs/DESIGN.md` updated to match. Still not tried on the phone.
 
 ## Next
-Run stage D4 from `docs/PLAYBOOK.md`: review the mockups on the phone and the laptop, and
-repeat until happy. Bring the three questions under Known issues.
+D4 round 2: open the mockups on the Android phone and the laptop, write down what felt wrong,
+slow, ugly or confusing, and bring it back with answers to the questions under Known issues.
 
 ## Known issues
+- **"See all" on Home's Recent has nowhere to go.** Recent mixes files, notes and clips, but
+  it links to Files (sorted by name). DESIGN §4 relies on it for "find a PDF from last week".
+  Decide in D4: drop the link, or add a plain newest-first "Recent" list page (a 15th screen).
 - **PDF preview on Android.** Chrome on Android cannot show a PDF inside a page, so the
   "embedded viewer" in DESIGN §3.4 would be blank on my phone. The mockup shows a page-1
   image instead, which the real app can only do by rendering it on the server — a new
@@ -127,3 +138,17 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **D3** — The Files root crumb reads "Files", not "Home" as in the D1 sketch — Home is a tab.
 - **D3** — `html` has scroll padding for the top bar and tab bar, so a focused COPY button
   never scrolls under either.
+- **D4** — The centre tab-bar button shows an upload arrow, not ＋. On Notes, Clipboard and
+  Links the header already has ＋ New, and two plus signs doing different things is a trap.
+- **D4** — Favorite rule: lists show a read-only ★ mark and offer Favorite/Unfavorite in ⋯;
+  detail screens (editor, preview, viewer) have the ★ toggle in the header and not in ⋯. Clip
+  rows lose their star button — COPY, eye and ⋯ are enough on every row.
+- **D4** — Toggle items in a sheet are labelled by what they will do for that item
+  (Unfavorite, Unhide content). The trigger carries `data-favorite` / `data-clip-hidden`.
+- **D4** — Home's first section is "Favorites", not "Pinned". One word for one idea.
+- **D4** — On a phone the Files header is back button + folder name; the breadcrumb trail
+  is desktop-only.
+- **D4** — Search scope chips only appear when search is opened from a section.
+- **D4** — No "Uploaded" toast; the panel's "All uploaded" title is the confirmation.
+- **D4** — PDF preview image is capped at 42dvh on a phone so Download is on the first screen.
+- **D4** — The PDF preview's ⋯ sheet drops Download (it is the page's main button).

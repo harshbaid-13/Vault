@@ -154,6 +154,11 @@
     sheetTrigger = trigger;
     const title = $('.sheet__title', dialog);
     if (title && trigger.dataset.sheetTitle) title.textContent = trigger.dataset.sheetTitle;
+    // Toggle actions say what they will do to this item, not what they did last.
+    const favorite = $('[data-action="favorite"]', dialog);
+    if (favorite) favorite.lastChild.textContent = 'favorite' in trigger.dataset ? 'Unfavorite' : 'Favorite';
+    const hide = $('[data-action="hide"]', dialog);
+    if (hide) hide.lastChild.textContent = 'clipHidden' in trigger.dataset ? 'Unhide content' : 'Hide content';
     const popover = pointerFine.matches && !trigger.closest('.tabbar');
     dialog.classList.toggle('sheet--popover', popover);
     dialog.style.top = '';
@@ -203,6 +208,14 @@
         break;
       case 'copy':
         copy(item, copySource(item.dataset.copyFrom ? item : sheetTrigger));
+        break;
+      case 'favorite':
+        // MOCKUP ONLY: S9 sends the favorite toggle here.
+        toast(sheetTrigger && 'favorite' in sheetTrigger.dataset ? 'Removed from Favorites' : 'Added to Favorites');
+        break;
+      case 'hide':
+        // MOCKUP ONLY: S4 sends the hide toggle here.
+        toast(sheetTrigger && 'clipHidden' in sheetTrigger.dataset ? 'Content no longer hidden' : 'Content hidden');
         break;
       case 'delete':
         confirmDelete(name);
@@ -397,7 +410,8 @@
       return;
     }
     if (rows.some((row) => row.dataset.state === 'failed')) return; // stays put
-    toast('Uploaded');
+    // No "Uploaded" toast: the panel title already says "All uploaded", and a
+    // toast would land on top of the panel.
     autoHideTimer = setTimeout(dismissUploads, 4000);
   }
 

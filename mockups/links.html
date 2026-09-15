@@ -46,7 +46,7 @@
     <span class="row__meta"><span class="mono">192.168.1.1</span> · Sep 3</span>
   </div>
   <span class="pin-mark" aria-label="Favorite"><span class="icon icon--star-filled icon--sm" aria-hidden="true"></span></span>
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Router admin" data-copy="http://192.168.1.1" aria-haspopup="dialog" aria-label="More actions for Router admin"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="Router admin" data-favorite data-copy="http://192.168.1.1" aria-haspopup="dialog" aria-label="More actions for Router admin"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 <li class="row" data-type="link">
   <span class="icon icon--link row__icon" aria-hidden="true"></span>
@@ -92,7 +92,7 @@
 <nav class="tabbar" aria-label="Main">
   <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
   <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
-  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--upload" aria-hidden="true"></span></button></div>
   <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
   <button class="tabbar__tab tabbar__tab--active" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
 </nav>
@@ -117,7 +117,7 @@
   <ul class="sheet__list">
     <li><button class="sheet__item" type="button" data-action="copy"><span class="icon icon--copy icon--sm" aria-hidden="true"></span>Copy URL</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="The link form is not in the mockups"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Edit</button></li>
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>

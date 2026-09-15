@@ -37,10 +37,6 @@
   </form>
 </header>
 <main class="page" id="main">
-<div class="chips" role="group" aria-label="Search scope">
-  <button class="chip" type="button" data-value="everywhere" aria-pressed="true">Everywhere</button>
-  <button class="chip" type="button" data-value="section" aria-pressed="false">This section</button>
-</div>
 <div class="chips" role="group" aria-label="Filter by type" data-filter="results">
   <button class="chip" type="button" data-value="all" aria-pressed="true">All</button>
   <button class="chip" type="button" data-value="file" aria-pressed="false">Files</button>
@@ -59,7 +55,7 @@
     <span class="row__meta row__meta--data">186 KB · Yesterday</span>
   </div>
   
-  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-aug.pdf" aria-haspopup="dialog" aria-label="More actions for electricity-bill-aug.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="electricity-bill-aug.pdf" data-favorite aria-haspopup="dialog" aria-label="More actions for electricity-bill-aug.pdf"><span class="icon icon--ellipsis" aria-hidden="true"></span></button>
 </li>
 <li class="row" data-type="file">
   <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
@@ -135,7 +131,7 @@ Voltage!Spring22</textarea>
 <nav class="tabbar" aria-label="Main">
   <a class="tabbar__tab" href="home.html"><span class="icon icon--house" aria-hidden="true"></span><span>Home</span></a>
   <a class="tabbar__tab" href="files.html"><span class="icon icon--folder" aria-hidden="true"></span><span>Files</span></a>
-  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--plus" aria-hidden="true"></span></button></div>
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files"><span class="icon icon--upload" aria-hidden="true"></span></button></div>
   <a class="tabbar__tab" href="clipboard.html"><span class="icon icon--clipboard" aria-hidden="true"></span><span>Clipboard</span></a>
   <button class="tabbar__tab" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog"><span class="icon icon--ellipsis" aria-hidden="true"></span><span>More</span></button>
 </nav>
@@ -160,7 +156,7 @@ Voltage!Spring22</textarea>
   <ul class="sheet__list">
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="Renamed"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Rename</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="Moved to Documents"><span class="icon icon--folder-input icon--sm" aria-hidden="true"></span>Move</button></li>
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="Downloading…"><span class="icon icon--download icon--sm" aria-hidden="true"></span>Download</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
@@ -170,7 +166,7 @@ Voltage!Spring22</textarea>
   <span class="sheet__handle" aria-hidden="true"></span>
   <p class="sheet__title" id="sheet-note-title">Note</p>
   <ul class="sheet__list">
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
@@ -181,7 +177,7 @@ Voltage!Spring22</textarea>
   <ul class="sheet__list">
     <li><button class="sheet__item" type="button" data-action="copy"><span class="icon icon--copy icon--sm" aria-hidden="true"></span>Copy URL</button></li>
     <li><button class="sheet__item" type="button" data-action="toast" data-toast="The link form is not in the mockups"><span class="icon icon--pencil icon--sm" aria-hidden="true"></span>Edit</button></li>
-    <li><button class="sheet__item" type="button" data-action="toast" data-toast="Added to Favorites"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite"><span class="icon icon--star icon--sm" aria-hidden="true"></span>Favorite</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete"><span class="icon icon--trash icon--sm" aria-hidden="true"></span>Delete</button></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
