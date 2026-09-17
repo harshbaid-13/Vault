@@ -460,6 +460,79 @@
     });
   }
 
+  /* ---- Login lockout countdown and Change password -------------------- */
+
+  function waitText(seconds) {
+    if (seconds > 90) return `Too many attempts. Try again in ${Math.ceil(seconds / 60)} minutes.`;
+    return `Too many attempts. Try again in ${seconds} second${seconds === 1 ? '' : 's'}.`;
+  }
+
+  // The server renders the locked form with the button disabled; this counts down and
+  // gives the button back when the lock ends.
+  function initRetryCountdown(line) {
+    const button = $('button[type="submit"]', line.closest('form'));
+    const endsAt = Date.now() + Number(line.dataset.retryAfter) * 1000;
+    const tick = () => {
+      const left = Math.ceil((endsAt - Date.now()) / 1000);
+      if (left <= 0) {
+        clearInterval(timer);
+        line.textContent = '';
+        if (button) button.disabled = false;
+        return;
+      }
+      line.textContent = waitText(left);
+    };
+    const timer = setInterval(tick, 1000);
+    tick();
+  }
+
+  function initPasswordForm(form) {
+    const error = $('[data-password-error]', form);
+    const submit = $('button[type="submit"]', form);
+    const minLength = Number(form.dataset.minLength);
+    const dialog = form.closest('dialog');
+
+    dialog.addEventListener('close', () => {
+      form.reset();
+      error.textContent = '';
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const { current, new: next, repeat } = form.elements;
+      let problem = '';
+      if (!current.value) problem = 'Enter your current password.';
+      else if (next.value.length < minLength) problem = `The new password needs at least ${minLength} characters.`;
+      else if (next.value !== repeat.value) problem = "The new passwords don't match.";
+      error.textContent = problem;
+      if (problem) return;
+
+      submit.disabled = true;
+      try {
+        const response = await fetch('/api/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current: current.value, new: next.value }),
+        });
+        if (response.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          error.textContent = body.error || "Couldn't change the password. Try again.";
+          return;
+        }
+        dialog.close();
+        toast('Password changed');
+      } catch {
+        error.textContent = "Can't reach the vault. Is Tailscale connected?";
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  }
+
   /* ---- Photo viewer --------------------------------------------------- */
 
   function initViewer(viewer) {
@@ -511,7 +584,7 @@
 
   const CLICK_TARGETS = [
     '[data-action]', '[data-copy]', '[data-copy-from]', '[data-reveal]', '[data-star]',
-    '[data-sheet-open]', '[data-close]', '[data-toast]', '[data-upload]',
+    '[data-sheet-open]', '[data-modal-open]', '[data-close]', '[data-toast]', '[data-upload]',
     '[data-upload-cancel]', '[data-upload-retry]', '[data-upload-toggle]',
     '[data-upload-dismiss]', '[data-search-clear]', '.chip',
   ].join(',');
@@ -530,6 +603,7 @@
     else if ('reveal' in data) setRevealed(target, target.getAttribute('aria-pressed') !== 'true');
     else if ('star' in data) toggleStar(target);
     else if ('sheetOpen' in data) openSheet(target);
+    else if ('modalOpen' in data) document.getElementById(data.modalOpen)?.showModal();
     else if ('close' in data) target.closest('dialog')?.close();
     else if ('toast' in data) toast(data.toast);
     else if ('upload' in data) {
@@ -572,6 +646,8 @@
   /* ---- Init ----------------------------------------------------------- */
 
   $$('[data-autosave]').forEach(initAutosave);
+  $$('[data-retry-after]').forEach(initRetryCountdown);
+  $$('[data-password-form]').forEach(initPasswordForm);
   $$('.upload-row').forEach(renderRow);
   updateUploadTitle();
   const viewer = $('.viewer');

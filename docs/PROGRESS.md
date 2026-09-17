@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S1 (walking skeleton) — done, including the Docker checks
-**Last updated:** 2026-09-17, S1 Docker checks
+**Current stage:** S2 (login) — built, tested, checked in Docker; your hands-on check is next
+**Last updated:** 2026-09-17, after S2
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -33,7 +33,7 @@ runs at the end of every one.
 - [x] S1 — Walking skeleton: config (refuses bad SESSION_SECRET), db + `001_initial.sql`,
       base layout from the mockups, `/healthz`, security headers, 404/500, Dockerfile (uid
       1000, tzdata), compose (127.0.0.1, ./data, ./backups), `.env.example`, conftest
-- [ ] S2 — Login: `cli set-password`, Argon2id, session + session_version, auth allowlist,
+- [x] S2 — Login: `cli set-password`, Argon2id, session + session_version, auth allowlist,
       global lockout, Origin check, safe `next`, logout, Change password in Settings
       (current password required first — TECH_PLAN §5 #23)
 - [ ] S3 — Phone access: `docs/TAILSCALE.md` (fetched install steps), `tailscale serve`,
@@ -107,9 +107,25 @@ runs at the end of every one.
   127.0.0.1:8000 only; runs as uid 1000 and `./data` files are owned by the host user; tzdata
   works (Asia/Kolkata); `./data` survives `down`/`up` and the migration isn't re-applied; a short
   SESSION_SECRET exits 1 with the one-sentence message. `.env` created with a generated secret.
+- **S2** — Login. `app/auth.py`: Argon2id hash + `session_version` in `settings`,
+  `GET/POST /login` (shows the `set-password` command until a password exists), `POST /logout`,
+  `POST /api/password` (current password checked first, counts toward the lockout, keeps this
+  session, logs out the rest). `app/cli.py`: `python -m app.cli set-password` (hidden prompt
+  twice, ≥ 4 chars, safe while the vault runs — it migrates but never empties `tmp/`).
+  `app/security.py`: `LoginLimiter` (one global bucket), `OriginCheckMiddleware` (403; `/api`
+  writes must be JSON or octet-stream → 415), `AuthGateMiddleware` (allowlist; pages 302 to
+  `/login?next=…`, `/api` 401 JSON). Starlette `SessionMiddleware` cookie `vault_session`.
+  Log out in the sidebar, the More sheet and Settings; Settings has Security → Change password
+  (a modal) and Log out — the rest of Settings is S3. `app.js`: lockout countdown, password
+  form. 109 tests pass (54 new). In Docker: CLI sets the password, redirect/401 when logged
+  out, login → `next`, foreign-Origin logout → 403, 5th wrong try → 429 and the right password
+  still 429, logout. Headless Firefox (500px — its smallest window — and 1280, light and dark):
+  countdown ticks and re-enables, modal errors from client and server, success toast, both
+  Log out buttons work, 16px inputs, 44px buttons, no horizontal scroll.
 
 ## Next
-S2 — Login, from `docs/PLAYBOOK.md`. Commit S1 first.
+You: the S2 hands-on check (commands in the S2 hand-off), then commit S1 + S2. Then S3 —
+phone access over Tailscale, from `docs/PLAYBOOK.md`.
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
@@ -135,6 +151,11 @@ S2 — Login, from `docs/PLAYBOOK.md`. Commit S1 first.
 - **To verify, not assumed:** Starlette `FileResponse` Range support (S6), `tailscale serve`
   passing a 2 GB body (S3/S6), Chrome rendering the
   PDF iframe without a sandbox CSP (S8).
+
+- **Not checked at a true 375px in S2.** Headless Firefox won't go below 500px wide. The
+  login form is max 360px and the modal is full width minus 16px each side, so it should fit;
+  check on the phone in S3.
+- **Lockout is in memory**, so restarting the container clears it. Fine for one user.
 
 ## Decisions log
 Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
@@ -203,3 +224,18 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
   snapshots (files never change after upload, so bytes are copied once — changed in review);
   PDF on phone = Open/Download, no page-1 render; hidden clip content stays in the page;
   "See all" on Recent removed; Change password also in Settings.
+- **S2** — "Same error for every failure" means every *wrong* password shows "Wrong password.";
+  while locked, the form shows DESIGN §3.1's "Too many attempts. Try again in N seconds." with
+  a countdown (429). It says nothing about whether the password was right.
+- **S2** — The 5th wrong try starts the 60 s lock at once (so the 6th is blocked). After it
+  ends, each further wrong try doubles the lock (120, 240, 480, then 900 s max) until a
+  correct login resets it.
+- **S2** — The `/api` JSON-only rule applies to POST/PUT/PATCH. DELETE has no body, so it
+  only needs the Origin check.
+- **S2** — The Change password form is a modal on Settings (not mocked in D3): current, new,
+  new again; errors under the fields; "Password changed" toast on success.
+- **S2** — `python -m app.cli set-password` runs migrations but not the startup cleanup, so
+  running it while the vault is up can't delete an upload in progress.
+- **S2** — Minimum password length is **4**, not the playbook's 12 (your call). Accepted
+  trade-off: the lockout makes guessing over the network slow, but anyone who gets a copy of
+  `vault.db` or a backup could crack a 4-letter hash in hours, so keep backups private.

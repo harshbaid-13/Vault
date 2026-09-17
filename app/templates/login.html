@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Log in · My Vault</title>
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="/static/js/app.js" defer></script>
+</head>
+<body class="login" data-app>
+<main id="main">
+{% if has_password %}
+  <form class="login__form" action="/login" method="post">
+    <h1 class="login__mark">My Vault</h1>
+    <input type="hidden" name="next" value="{{ next }}">
+    <div class="field">
+      <label class="field__label" for="password">Password</label>
+      <input class="input" id="password" name="password" type="password" autocomplete="current-password" required autofocus aria-describedby="login-error">
+    </div>
+    <button class="btn btn--primary btn--block" type="submit"{% if wait %} disabled{% endif %}>Log in</button>
+    <p class="field__error" id="login-error" aria-live="polite"{% if wait %} data-retry-after="{{ wait }}"{% endif %}>{{ error }}</p>
+  </form>
+{% else %}
+  <div class="login__form">
+    <h1 class="login__mark">My Vault</h1>
+    <p>No password is set yet. On the vault computer, in the vault folder, run:</p>
+    <pre class="login__command"><code>{{ command }}</code></pre>
+    <p>Then reload this page.</p>
+  </div>
+{% endif %}
+</main>
+</body>
+</html>

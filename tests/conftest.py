@@ -1,10 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app import auth
 from app.config import Settings
 from app.main import create_app
 
 TEST_SECRET = "test-session-secret-" + "x" * 40
+PASSWORD = "correct horse battery"
 
 
 @pytest.fixture
@@ -22,8 +24,26 @@ def app(settings):
     return create_app(settings)
 
 
+def make_client(app):
+    # Same-origin Origin by default, so the Origin check passes for normal requests.
+    return TestClient(app, base_url="http://testserver", headers={"Origin": "http://testserver"})
+
+
 @pytest.fixture
 def client(app):
-    # Same-origin Origin by default, so S2's Origin check passes for normal requests.
-    with TestClient(app, base_url="http://testserver", headers={"Origin": "http://testserver"}) as c:
+    """Logged out."""
+    with make_client(app) as c:
         yield c
+
+
+def log_in(client, password=PASSWORD):
+    r = client.post("/login", data={"password": password}, follow_redirects=False)
+    assert r.status_code == 303, r.status_code
+    return client
+
+
+@pytest.fixture
+def auth_client(app, settings, client):
+    """Password set, logged in."""
+    auth.set_password(settings.db_path, PASSWORD)
+    return log_in(client)

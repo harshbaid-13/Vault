@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<section aria-labelledby="s-security">
+  <div class="section-head"><h2 class="section-head__title" id="s-security">Security</h2></div>
+  <ul class="list">
+    <li class="row">
+      <div class="row__body"><button class="row__title row__link unbutton" type="button" data-modal-open="modal-password">Change password</button></div>
+      <span class="icon icon--chevron-right row__icon" aria-hidden="true"></span>
+    </li>
+  </ul>
+</section>
+<div class="stack">
+  <form action="/logout" method="post"><button class="btn btn--secondary btn--block" type="submit"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</button></form>
+</div>
+<dialog class="modal" id="modal-password" aria-labelledby="modal-password-title">
+  <form class="modal__form" data-password-form data-min-length="{{ min_password_length }}" novalidate>
+    <h2 class="modal__title" id="modal-password-title">Change password</h2>
+    <div class="field">
+      <label class="field__label" for="password-current">Current password</label>
+      <input class="input" id="password-current" name="current" type="password" autocomplete="current-password" required>
+    </div>
+    <div class="field">
+      <label class="field__label" for="password-new">New password</label>
+      <input class="input" id="password-new" name="new" type="password" autocomplete="new-password" minlength="{{ min_password_length }}" required aria-describedby="password-new-hint">
+      <p class="field__hint" id="password-new-hint">At least {{ min_password_length }} characters. Your other devices will be logged out.</p>
+    </div>
+    <div class="field">
+      <label class="field__label" for="password-repeat">New password again</label>
+      <input class="input" id="password-repeat" name="repeat" type="password" autocomplete="new-password" required>
+    </div>
+    <p class="field__error" data-password-error aria-live="polite"></p>
+    <div class="modal__actions">
+      <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+      <button class="btn btn--primary" type="submit">Change password</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

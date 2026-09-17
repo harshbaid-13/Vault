@@ -330,7 +330,7 @@ plaintext file forever. `set-password` prompts for it and stores only the hash.
 | 20 | Safe deletion | row deleted in a transaction first, then disk file + thumbnail; missing disk file logs a warning with the id only | row and bytes gone |
 | 21 | Not reachable from the internet | compose publishes `127.0.0.1:8000:8000` only; HTTPS via `tailscale serve` (never Funnel) | manual check in S3 |
 | 22 | Pixel bombs | `thumbs.py` sets `Image.MAX_IMAGE_PIXELS = 80_000_000` and catches `DecompressionBombError` | a 20000×20000 PNG header → no thumb, no 500 |
-| 23 | Changing the password needs the current one | `auth.change_password`: verifies `current` against the stored hash **before** anything else; wrong or missing → 400/422 and the hash is untouched; a wrong `current` counts toward the login lockout (#5), so the form can't be used to guess; `new` ≥ 12 characters; success bumps `session_version` and re-issues this session only | `test_auth`: wrong current → 400 + old password still logs in; missing current → 422; locked out after 5 wrong; right current → 204, new password works, old password fails, another logged-in client → 302 |
+| 23 | Changing the password needs the current one | `auth.change_password`: verifies `current` against the stored hash **before** anything else; wrong or missing → 400/422 and the hash is untouched; a wrong `current` counts toward the login lockout (#5), so the form can't be used to guess; `new` ≥ 4 characters (you chose 4 in S2); success bumps `session_version` and re-issues this session only | `test_auth`: wrong current → 400 + old password still logs in; missing current → 422; locked out after 5 wrong; right current → 204, new password works, old password fails, another logged-in client → 302 |
 
 ---
 

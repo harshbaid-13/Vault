@@ -29,6 +29,7 @@
   </ul>
   <ul class="sidebar__list sidebar__foot">
     {{ sidebar_link("settings", "/settings", "Settings", "settings") }}
+    <li><form action="/logout" method="post"><button class="sidebar__link" type="submit">{{ nav_icon("log-out", "sm") }}Log out</button></form></li>
   </ul>
 </nav>
 <div class="app__main">
@@ -63,6 +64,7 @@
     <li><a class="sheet__item" href="/links">{{ nav_icon("link", "sm") }}Links</a></li>
     <li><a class="sheet__item" href="/favorites">{{ nav_icon("star", "sm") }}Favorites</a></li>
     <li><a class="sheet__item" href="/settings">{{ nav_icon("settings", "sm") }}Settings</a></li>
+    <li><form action="/logout" method="post"><button class="sheet__item" type="submit">{{ nav_icon("log-out", "sm") }}Log out</button></form></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
 </dialog>

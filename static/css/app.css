@@ -303,6 +303,14 @@ button {
   font-weight: var(--fw-medium);
 }
 
+/* Log out is a POST form, so its sidebar entry is a button. */
+button.sidebar__link {
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+
 .sidebar__foot {
   margin-top: auto;
   padding-top: var(--space-2);
@@ -649,6 +657,11 @@ button {
 .field__error {
   min-height: 1.5em;
   color: var(--c-danger);
+  font-size: var(--fs-sm);
+}
+
+.field__hint {
+  color: var(--c-text-muted);
   font-size: var(--fs-sm);
 }
 
@@ -1447,6 +1460,19 @@ button {
   text-align: center;
 }
 
+/* Shown instead of the form until a password has been set. */
+.login__command {
+  padding: var(--space-3);
+  overflow-x: auto;
+  border: var(--border-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--c-surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 /* ==== Bottom sheet / popover =========================================== */
 /* A native <dialog>, so focus trapping, Escape and the top layer come
    free. Touch: slides up from the bottom. Pointer: JS adds .sheet--popover
@@ -1635,6 +1661,17 @@ button {
 
 @media (min-width: 600px) {
   .modal__actions { flex-direction: row; justify-content: flex-end; }
+}
+
+/* A modal that holds a form (Change password). */
+.modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.modal__form .modal__actions {
+  margin-top: var(--space-2);
 }
 
 /* ==== Toast ============================================================ */
