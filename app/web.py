@@ -44,7 +44,32 @@ def when(context, stamp: str) -> str:
     return f"{moment.strftime('%b')} {moment.day}, {moment.year}"
 
 
+@pass_context
+def ago(context, stamp: str) -> str:
+    """List dates (DESIGN §5): relative for the last week, then "Sep 10" / "Mar 2, 2024"."""
+    tz = ZoneInfo(context["request"].app.state.settings.timezone)
+    moment = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC).astimezone(tz)
+    now = datetime.now(tz)
+    seconds = (now - moment).total_seconds()
+    days = (now.date() - moment.date()).days
+    if seconds < 60:
+        return "Just now"
+    if seconds < 3600:
+        return f"{int(seconds // 60)} min ago"
+    if days == 0:
+        hours = int(seconds // 3600)
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    if days == 1:
+        return "Yesterday"
+    if days < 7:
+        return f"{days} days ago"
+    if moment.year == now.year:
+        return f"{moment.strftime('%b')} {moment.day}"
+    return f"{moment.strftime('%b')} {moment.day}, {moment.year}"
+
+
 templates.env.filters["size"] = size
+templates.env.filters["ago"] = ago
 templates.env.filters["when"] = when
 
 # Sidebar order. (key, href, label, icon)

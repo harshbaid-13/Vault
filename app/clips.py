@@ -115,7 +115,7 @@ def clip_editor(request: Request, clip_id: int) -> Response:
         request, "editor.html", section="clipboard", title="Clipboard", no_tabbar=True,
         item=clip, noun="clip", api_url=f"/api/clips/{clip_id}", back_url="/clipboard",
         body_field="content", body_label="Text to copy", body_placeholder="Paste or type the text to copy…",
-        max_body=MAX_CONTENT, can_hide=True,
+        max_body=MAX_CONTENT, can_hide=True, focus="#editor-title",
     )
 
 

@@ -591,7 +591,7 @@
         if (!dirty) status.textContent = `Saved · Today, ${clock()}`;
       } catch (error) {
         dirty = true;
-        status.textContent = 'Not saved yet — your text is still here.';
+        status.textContent = 'Not saved — retrying… Your text is still here.';
         // One toast, then keep retrying quietly.
         if (!failing) toast(error.status === 401 ? 'You were logged out. Copy your text, then reload to log in.' : error.message, { error: true });
         failing = true;
@@ -607,6 +607,28 @@
       dirty = true;
       clearTimeout(timer);
       timer = setTimeout(save, 800);
+    });
+
+    // Autosave already does the work; Save is there so finishing feels deliberate.
+    const saveButton = $('[data-editor-save]');
+    let savedTimer;
+    saveButton?.addEventListener('click', async () => {
+      if (isEmpty()) {
+        toast('Type something first.');
+        return;
+      }
+      clearTimeout(timer);
+      while (inFlight) await new Promise((resolve) => { setTimeout(resolve, 100); });
+      const wasFailing = failing;
+      await save();
+      if (dirty) {
+        if (wasFailing) toast('Not saved yet — still retrying.', { error: true });
+        return;
+      }
+      toast('Saved');
+      saveButton.textContent = 'Saved ✓';
+      clearTimeout(savedTimer);
+      savedTimer = setTimeout(() => { saveButton.textContent = 'Save'; }, 1500);
     });
 
     hiddenSwitch?.addEventListener('change', async () => {
@@ -656,7 +678,7 @@
       if (event.persisted && editorDeleted) window.location.replace(form.dataset.back);
     });
 
-    if (isEmpty()) fields[0].focus();
+    if (isEmpty()) $(form.dataset.focus || 'input', form)?.focus();
   }
 
   function initAutosave(form) {
@@ -668,6 +690,40 @@
       clearTimeout(timer);
       // MOCKUP ONLY: pretend the save took 600ms. S5 posts the form here.
       timer = setTimeout(() => { status.textContent = 'Saved'; }, 600);
+    });
+  }
+
+  /* ---- Link form ----------------------------------------------------- */
+
+  function initLinkForm(form) {
+    const error = $('[data-link-error]', form);
+    const submit = $('button[type="submit"]', form);
+    // Typing http:// or https:// yourself moves the switch to match.
+    const { url: address, use_http: httpSwitch } = form.elements;
+    address.addEventListener('input', () => {
+      if (/^http:\/\//i.test(address.value.trim())) httpSwitch.checked = true;
+      else if (/^https:\/\//i.test(address.value.trim())) httpSwitch.checked = false;
+    });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const { url, title, description, use_http: useHttp } = form.elements;
+      if (!url.value.trim()) {
+        error.textContent = "Enter the link's address.";
+        url.focus();
+        return;
+      }
+      error.textContent = '';
+      submit.disabled = true;
+      try {
+        await api(form.dataset.method, form.dataset.linkForm, {
+          url: url.value, title: title.value, description: description.value, use_http: useHttp.checked,
+        });
+        window.location.href = '/links';
+      } catch (problem) {
+        if (problem.status === 401) failed(problem);
+        else error.textContent = problem.message;
+        submit.disabled = false;
+      }
     });
   }
 
@@ -828,11 +884,12 @@
     if (!target) return;
     const data = target.dataset;
 
+    // A ⋯ button can carry data-copy for its sheet's Copy action, so the sheet check comes first.
     if ('action' in data) runAction(target);
+    else if ('sheetOpen' in data) openSheet(target);
     else if ('copy' in data || 'copyFrom' in data) copy(target, copySource(target));
     else if ('reveal' in data) setRevealed(target, target.getAttribute('aria-pressed') !== 'true');
     else if ('star' in data) toggleStar(target);
-    else if ('sheetOpen' in data) openSheet(target);
     else if ('modalOpen' in data) document.getElementById(data.modalOpen)?.showModal();
     else if ('close' in data) target.closest('dialog')?.close();
     else if ('toast' in data) toast(data.toast);
@@ -877,6 +934,7 @@
 
   $$('[data-autosave]').forEach(initAutosave);
   $$('[data-editor]').forEach(initEditor);
+  $$('[data-link-form]').forEach(initLinkForm);
   $$('[data-retry-after]').forEach(initRetryCountdown);
   $$('[data-password-form]').forEach(initPasswordForm);
   if ($('[data-check]')) runConnectionChecks();

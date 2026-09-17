@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S4 (Clipboard) — built, waiting for your phone check; S5 (Notes + Links) is next
-**Last updated:** 2026-09-17, after S4
+**Current stage:** S5 (Notes + Links) — built, waiting for your phone check; S6 (Files) is next
+**Last updated:** 2026-09-17, after S5
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -40,7 +40,7 @@ runs at the end of every one.
       Secure cookie + allowed origin, Settings shows HTTPS ✓ / Clipboard ✓, 2 GB upload probe
 - [x] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
       delete, COPY from `.clip__source`; "How a feature is structured" into `CLAUDE.md`
-- [ ] S5 — Notes (editor, autosave on hide/leave, discard empty) and Links (URL rules, form)
+- [x] S5 — Notes (editor, autosave on hide/leave, discard empty) and Links (URL rules, form)
 - [ ] S6 — Files: raw-body streaming upload (2 parallel), panel, download/view allowlist,
       Range 206, rename, favorite, delete, `?partial=1` refresh
 - [ ] S7 — Folders: tree, breadcrumb, create/rename/delete with counts, move picker, select
@@ -150,10 +150,34 @@ runs at the end of every one.
   clip and on a 3 KB clip pasted back exactly; reveal; sheet Unhide/Unfavorite refresh the list;
   delete confirm (Cancel focused) from the list and from the editor; empty clip discarded; a
   quick edit then Back shows the new text; no horizontal scroll. Docker image rebuilt and healthy.
+  **Your check (2026-09-17):** used on the phone; you saw one clip missing from the list after
+  making two (one with only a title or only text). Logs show a clip created and deleted 4 times
+  10–16 s later (step 4 of the check does that). Not reproduced in Firefox; you chose to leave it.
+- **S5** — Notes and Links, same shape as Clipboard. `app/notes.py`: `/notes` list (rows named
+  by the title or the first line, `ago` date · preview line, ★ mark, ⋯ Favorite/Delete),
+  `POST /notes/new` → the shared editor with the cursor in the body, autosave as clips, ⋯ Copy
+  all / Delete, empty notes discarded; `/api/notes` CRUD + `?q=`, body ≤ 1,000,000.
+  `app/links.py`: `normalise_url` (adds `https://`, keeps `host:port`, rejects every other
+  scheme and malformed addresses), empty title → host, `/links` list (title opens a new tab
+  with `rel="noopener noreferrer"`, mono host · date, description, ⋯ Copy URL/Edit/Favorite/
+  Delete), `/links/new` and `/links/{id}/edit` form page, `/api/links` CRUD + `?q=` over title,
+  URL and description. Editor pages set `interactive-widget=resizes-content` so the keyboard
+  shrinks the page instead of covering the text. Fixed in `app.js`: a ⋯ button carrying
+  `data-copy` copied instead of opening its sheet. 214 tests pass (64 new). Headless Firefox
+  (500px, light and dark): new note starts in the body; text typed then the page hidden before
+  the 800 ms autosave is saved; list row, favorite, delete from the editor; link form rejects
+  `javascript:`, `www.irctc.co.in` saves as host title, opens in a new tab, Copy URL pastes back,
+  Edit, Delete; no horizontal scroll; the S4 clipboard run still passes. Docker rebuilt, healthy.
+  **S5 follow-up (your request):** a **Save** button in the editor header (notes and clips) next
+  to ★ and ⋯. It saves now, shows "Saved ✓" for 1.5 s and a "Saved" toast, and stays on the page;
+  autosave is unchanged. The link form has a **Use http:// instead of https://** switch: the API
+  takes an optional `use_http` with the URL (on → http, off → https, whatever was typed); without
+  it, https stays the default. Typing `http://` or `https://` moves the switch to match, and Edit
+  shows it on for http links. 222 tests pass. Checked in headless Firefox, light and dark.
   **Waiting for your check on the phone.**
 
 ## Next
-Your S4 phone check. Then S5 — Notes and Links, from `docs/PLAYBOOK.md`.
+Your S5 phone check. Then S6 — Files core, from `docs/PLAYBOOK.md`.
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
@@ -188,6 +212,10 @@ Your S4 phone check. Then S5 — Notes and Links, from `docs/PLAYBOOK.md`.
 - **Android back gesture right after typing** (within 0.8 s) can show the list with the old
   text: the editor's save is sent as the page goes away and can land after the list loads.
   Reload shows the new text; nothing is lost. The editor's own ‹ back link waits for the save.
+- **A clip went missing from the list on your phone (S4 check), not reproduced.** Suspects: the
+  back-gesture race above combined with empty items being left out of lists, or the editor
+  seeing its fields as empty on the phone and discarding. Same code runs for notes. If it
+  happens again: note which fields had text and how you left the editor.
 - **Hidden clips show in plain text in their editor.** Opening the editor is a deliberate tap;
   the list, search and toasts stay masked.
 - **Lockout is in memory**, so restarting the container clears it. Fine for one user.
@@ -294,3 +322,23 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
   shows one error toast, "Not saved yet — your text is still here.", and retries every 5 s.
 - **S4** — Favorite/Hide from a row's ⋯ show a toast (as the D3 mockup); the editor's ★ doesn't
   (DESIGN §8.15).
+- **S5** — Notes list has no search box (as Clipboard, DESIGN §3.7); `/api/notes?q=` is built.
+- **S5** — An untitled note's row is named by its first non-empty line, and the preview is the next
+  line. Empty notes (no title, no body) are left out of the list, as clips.
+- **S5** — New note puts the cursor in the body (brief); new clip keeps it in the title (a clip
+  needs a name to find it).
+- **S5** — Editor save failure line: "Not saved — retrying… Your text is still here." (brief's
+  "Not saved, retrying" plus DESIGN's reassurance). Used by clips too.
+- **S5** — Links are ordered favorites first, then newest *saved* (`created_at`, TECH_PLAN index).
+  Editing a link doesn't move it.
+- **S5** — `host:port` without a scheme (`192.168.1.1:8080`, `localhost:8000`) gets `https://`
+  like any other bare address; every other `something:` is rejected. `www.` is dropped from the
+  shown host and the auto title.
+- **S5** — The link form is its own page without the tab bar (not a sheet), saved with JSON; Save
+  returns to Links. No toast, since the page changes.
+- **S5 (your call)** — Editors get a Save button after all (DESIGN §3.8 said none): autosave stays,
+  Save is for the feel of finishing. It stays on the page; Save on an empty item says "Type
+  something first." The header's Save is the editor's one filled button (no COPY on that screen).
+- **S5 (your call)** — Links: a "Use http://" switch on the form. Backend default stays https; the
+  switch, when sent, sets the scheme even over a typed one, and the form keeps it in sync with
+  what you type.

@@ -1,0 +1,29 @@
+{% extends layout %}
+{% from "macros.html" import note_row, icon with context %}
+{% block actions %}<form action="/notes/new" method="post"><button class="btn btn--secondary" type="submit" aria-label="New note">{{ icon("plus", "sm") }}New</button></form>{% endblock %}
+{% block content %}
+{% if notes %}
+<h2 class="visually-hidden">All notes</h2>
+<ul class="list">
+{% for note in notes %}
+{{ note_row(note) }}
+{% endfor %}
+</ul>
+{% else %}
+<div class="empty">
+  {{ icon("file-text", "lg") }}
+  <p>No notes yet. Tap ＋ New to write one.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block dialogs %}
+<dialog class="sheet" id="sheet-note" aria-labelledby="sheet-note-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-note-title">Note</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="favorite">{{ icon("star", "sm") }}Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+{% endblock %}

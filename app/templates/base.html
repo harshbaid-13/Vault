@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+{#- On full-screen forms the keyboard shrinks the page, so the text box stays above it. #}
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover{% if no_tabbar %}, interactive-widget=resizes-content{% endif %}">
 <meta name="color-scheme" content="light dark">
 <title>{% if section != "home" %}{{ title }} · {% endif %}My Vault</title>
 <link rel="stylesheet" href="/static/css/app.css">

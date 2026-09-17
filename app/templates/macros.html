@@ -22,3 +22,33 @@
   <button class="copy-btn" type="button" data-copy aria-label="Copy {{ name }}"><span class="copy-btn__label">COPY</span></button>
 </li>
 {%- endmacro -%}
+
+{#- A Notes row. An untitled note is named by its first line; the preview is the next one. -#}
+{%- macro note_row(note) -%}
+{%- set lines = note.body[:2000].split("\n") | map("trim") | select | list -%}
+{%- set name = note.title or lines[0] or "Untitled" -%}
+{%- set preview = lines[0] if note.title else lines[1] -%}
+<li class="row">
+  <span class="icon icon--file-text row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="/notes/{{ note.id }}">{{ name }}</a>
+    <span class="row__meta">{{ note.updated_at | ago }}{% if preview %} · {{ preview }}{% endif %}</span>
+  </div>
+  {% if note.favorite %}<span class="pin-mark" aria-label="Favorite">{{ icon("star-filled", "sm") }}</span>{% endif %}
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-note" data-sheet-title="{{ name }}" data-item="/api/notes/{{ note.id }}"{% if note.favorite %} data-favorite{% endif %} aria-haspopup="dialog" aria-label="More actions for {{ name }}">{{ icon("ellipsis") }}</button>
+</li>
+{%- endmacro -%}
+
+{#- A Links row. The title opens the address in a new tab; the host shows where it goes. -#}
+{%- macro link_row(link) -%}
+<li class="row">
+  <span class="icon icon--link row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title }}</a>
+    <span class="row__meta"><span class="mono">{{ link.host }}</span> · {{ link.created_at | ago }}</span>
+    {% if link.description %}<span class="row__meta">{{ link.description }}</span>{% endif %}
+  </div>
+  {% if link.favorite %}<span class="pin-mark" aria-label="Favorite">{{ icon("star-filled", "sm") }}</span>{% endif %}
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="{{ link.title }}" data-item="/api/links/{{ link.id }}" data-edit="/links/{{ link.id }}/edit" data-copy="{{ link.url }}"{% if link.favorite %} data-favorite{% endif %} aria-haspopup="dialog" aria-label="More actions for {{ link.title }}">{{ icon("ellipsis") }}</button>
+</li>
+{%- endmacro -%}

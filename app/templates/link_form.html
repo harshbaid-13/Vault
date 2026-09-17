@@ -1,0 +1,31 @@
+{#- New link and Edit link. Saved by app.js as JSON; the server normalises the address. -#}
+{% extends layout %}
+{% from "macros.html" import icon with context %}
+{% block topbar %}
+<a class="icon-btn topbar__back" href="/links" aria-label="Back to Links">{{ icon("chevron-left") }}</a>
+<h1 class="topbar__title">{{ title }}</h1>
+{% endblock %}
+{% block content %}
+<form class="stack" data-link-form="{{ '/api/links/%d' % link.id if link else '/api/links' }}" data-method="{{ 'PATCH' if link else 'POST' }}" novalidate>
+  <div class="field">
+    <label class="field__label" for="link-url">Address</label>
+    <input class="input" id="link-url" name="url" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="2000" value="{{ link.url if link else '' }}" placeholder="example.com" required{% if not link %} autofocus{% endif %} aria-describedby="link-http-hint">
+    <label class="switch"><input type="checkbox" name="use_http"{% if link and link.url.lower().startswith("http://") %} checked{% endif %}>Use http:// instead of https://</label>
+    <p class="field__hint" id="link-http-hint">For things on your network without HTTPS, like a router at 192.168.1.1:8080.</p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="link-title">Title</label>
+    <input class="input" id="link-title" name="title" type="text" maxlength="200" value="{{ link.title if link else '' }}" aria-describedby="link-title-hint">
+    <p class="field__hint" id="link-title-hint">Leave empty to use the site's name from the address.</p>
+  </div>
+  <div class="field">
+    <label class="field__label" for="link-description">Description</label>
+    <textarea class="input" id="link-description" name="description" maxlength="1000" rows="3">{{ link.description if link else '' }}</textarea>
+  </div>
+  <p class="field__error" data-link-error aria-live="polite"></p>
+  <div class="modal__actions">
+    <a class="btn btn--secondary" href="/links">Cancel</a>
+    <button class="btn btn--primary" type="submit">{{ "Save" if link else "Save link" }}</button>
+  </div>
+</form>
+{% endblock %}

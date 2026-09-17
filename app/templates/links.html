@@ -1,0 +1,31 @@
+{% extends layout %}
+{% from "macros.html" import link_row, icon with context %}
+{% block actions %}<a class="btn btn--secondary" href="/links/new" aria-label="New link">{{ icon("plus", "sm") }}New</a>{% endblock %}
+{% block content %}
+{% if links %}
+<h2 class="visually-hidden">Saved links</h2>
+<ul class="list">
+{% for link in links %}
+{{ link_row(link) }}
+{% endfor %}
+</ul>
+{% else %}
+<div class="empty">
+  {{ icon("link", "lg") }}
+  <p>No links yet. Tap ＋ New to save one.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block dialogs %}
+<dialog class="sheet" id="sheet-link" aria-labelledby="sheet-link-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-link-title">Link</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy URL</button></li>
+    <li><button class="sheet__item" type="button" data-action="edit">{{ icon("pencil", "sm") }}Edit</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite">{{ icon("star", "sm") }}Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+{% endblock %}

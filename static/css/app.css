@@ -697,6 +697,11 @@ button.sidebar__link {
   color: var(--c-text-muted);
 }
 
+textarea.input {
+  line-height: var(--lh-relaxed);
+  resize: vertical;
+}
+
 .input[aria-invalid="true"] {
   border-color: var(--c-danger);
 }
@@ -1377,7 +1382,8 @@ button.sidebar__link {
   font-size: var(--fs-xs);
 }
 
-.editor__switch {
+/* A labelled checkbox: Hide content, Use http://. */
+.switch {
   display: inline-flex;
   flex: none;
   align-items: center;
@@ -1387,7 +1393,7 @@ button.sidebar__link {
   font-size: var(--fs-sm);
 }
 
-.editor__switch input {
+.switch input {
   width: 20px;
   height: 20px;
   margin: 0;

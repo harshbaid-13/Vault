@@ -2,7 +2,7 @@ import pytest
 
 from app.main import PLACEHOLDERS
 
-PAGES = list(PLACEHOLDERS) + ["/settings", "/clipboard"]
+PAGES = list(PLACEHOLDERS) + ["/settings", "/clipboard", "/notes", "/links"]
 
 SIDEBAR = ["/", "/files", "/photos", "/notes", "/clipboard", "/links", "/favorites", "/settings"]
 

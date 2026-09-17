@@ -1,5 +1,5 @@
 {% extends layout %}
-{% from "macros.html" import clip_row, icon %}
+{% from "macros.html" import clip_row, icon with context %}
 {% block actions %}<form action="/clipboard/new" method="post"><button class="btn btn--secondary" type="submit" aria-label="New clip">{{ icon("plus", "sm") }}New</button></form>{% endblock %}
 {% block content %}
 {% if clips %}
