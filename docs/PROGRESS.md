@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** S6 (Files) — built, waiting for your phone + laptop check; S7 (Folders) is next
+**Current stage:** S6 (Files) — done; S7 (Folders) is next
 **Last updated:** 2026-09-17, after S6
 
 Claude: update this file at the end of every stage. Keep it short.
@@ -197,11 +197,12 @@ runs at the end of every one.
   rename, view, delete with confirm; three 1 GB files uploaded 2 at a time, one cancelled mid-way
   (tmp/ empty, 2 stored), server memory 53 → 59 MB, downloaded 1 GB byte-identical, a Range in
   the middle of it correct. Docker rebuilt, healthy; `/data/files` writable by uid 1000.
-  **Waiting for your check** — including the 2 GB upload over `tailscale serve` (gotcha 19).
+  **Your check (2026-09-17):** "working great". You didn't say whether the 2 GB upload over
+  `tailscale serve` was part of it, so that stays under Known issues until confirmed.
 
 ## Next
-Your S6 check (phone photo upload; laptop drag-in of 5 files incl. a big video; a 2 GB file over
-the ts.net address). Then S7 — Folders, from `docs/PLAYBOOK.md`.
+S7 — Folders, move, sort, from `docs/PLAYBOOK.md` (adjusted by TECH_PLAN §9: sort saved per
+folder, select mode bar is Move / Delete).
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
