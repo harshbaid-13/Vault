@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/static/css/app.css">
 <script src="/static/js/app.js" defer></script>
 </head>
-<body class="app{% if no_tabbar %} app--no-tabbar{% endif %}" data-app>
+<body class="app{% if no_tabbar %} app--no-tabbar{% endif %}" data-app data-max-upload="{{ max_upload_bytes }}">
 {%- macro nav_icon(name, size="") -%}
 <span class="icon icon--{{ name }}{% if size %} icon--{{ size }}{% endif %}" aria-hidden="true"></span>
 {%- endmacro -%}

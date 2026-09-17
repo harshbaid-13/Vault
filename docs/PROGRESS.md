@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S5 (Notes + Links) — built, waiting for your phone check; S6 (Files) is next
-**Last updated:** 2026-09-17, after S5
+**Current stage:** S6 (Files) — built, waiting for your phone + laptop check; S7 (Folders) is next
+**Last updated:** 2026-09-17, after S6
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -41,7 +41,7 @@ runs at the end of every one.
 - [x] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
       delete, COPY from `.clip__source`; "How a feature is structured" into `CLAUDE.md`
 - [x] S5 — Notes (editor, autosave on hide/leave, discard empty) and Links (URL rules, form)
-- [ ] S6 — Files: raw-body streaming upload (2 parallel), panel, download/view allowlist,
+- [x] S6 — Files: raw-body streaming upload (2 parallel), panel, download/view allowlist,
       Range 206, rename, favorite, delete, `?partial=1` refresh
 - [ ] S7 — Folders: tree, breadcrumb, create/rename/delete with counts, move picker, select
       mode (Move/Delete), per-folder sort
@@ -176,8 +176,32 @@ runs at the end of every one.
   shows it on for http links. 222 tests pass. Checked in headless Firefox, light and dark.
   **Waiting for your check on the phone.**
 
+- **S6** — Files. `app/storage.py`: fixed extension → kind/MIME table, the inline allowlist,
+  `clean_name` (last segment, no control chars or bidi overrides, trims spaces/dots, 255 chars
+  keeping the extension, else "unnamed"), `path_for` (32-hex id only, resolved inside
+  `data/files`), `receive_upload` (Content-Length required, limit and disk-space checks first,
+  streams to `tmp/<id>.part` in 1 MB writes with sha256, stops the moment the body passes the
+  declared or allowed size, fsync + `os.replace`, part file always removed). `app/files.py`:
+  `/files` page (newest first, count · total size, rows with type icon, middle-truncated name,
+  size · date, ★, ⋯ Download / Rename / Copy name / Favorite / Delete), `POST /api/files`
+  (raw body + `X-File-Name`), `GET /api/files`, `PATCH` (name re-reads the type, favorite),
+  `DELETE` (row, then bytes; missing bytes → warning by id), `/download` (always attachment,
+  `filename*` for non-ASCII) and `/view` (inline only for the allowlist, text as `text/plain`);
+  file responses get `sandbox` CSP, nosniff and `private, no-cache`; PDFs `frame-ancestors 'self'`
+  + SAMEORIGIN for S8. Range/206 comes from Starlette 1.6's `FileResponse` — tested. `app.js`:
+  the real upload (XMLHttpRequest, 2 at a time, progress, cancel aborts, Retry, "Too large (max
+  N)" before sending using the server's limit, list refreshes after each upload, leaving asks
+  first), drag-and-drop overlay, Rename modal (selects the name without the extension), Download
+  via a `download` link so uploads keep going. 280 tests pass (58 new). Headless Firefox: 4 files
+  picked (one too large → failed row, rest listed with exact sizes), Hindi name, drop a file,
+  rename, view, delete with confirm; three 1 GB files uploaded 2 at a time, one cancelled mid-way
+  (tmp/ empty, 2 stored), server memory 53 → 59 MB, downloaded 1 GB byte-identical, a Range in
+  the middle of it correct. Docker rebuilt, healthy; `/data/files` writable by uid 1000.
+  **Waiting for your check** — including the 2 GB upload over `tailscale serve` (gotcha 19).
+
 ## Next
-Your S5 phone check. Then S6 — Files core, from `docs/PLAYBOOK.md`.
+Your S6 check (phone photo upload; laptop drag-in of 5 files incl. a big video; a 2 GB file over
+the ts.net address). Then S7 — Folders, from `docs/PLAYBOOK.md`.
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
@@ -200,12 +224,16 @@ Your S5 phone check. Then S6 — Files core, from `docs/PLAYBOOK.md`.
   - `upload-sheet.html` + the fake upload in `app.js`: one file at a time, panel looks like it
     persists. Real: 2 in parallel, and leaving the page while uploading asks first.
   - Select mode (not mocked): the bottom bar is Move / Delete, no Download.
-- **To verify, not assumed:** Starlette `FileResponse` Range support (S6), `tailscale serve`
-  passing a 2 GB body (S3/S6), Chrome rendering the
-  PDF iframe without a sandbox CSP (S8).
+- **To verify, not assumed:** `tailscale serve` passing a 2 GB body (your S6 check), Chrome
+  rendering the PDF iframe without a sandbox CSP (S8). Range support: verified in S6.
 
-- **2 GB upload through `tailscale serve` not tested yet** (TECH_PLAN gotcha 19). There is no
-  upload route until S6, so the probe moves to S6.
+- **2 GB upload through `tailscale serve` not tested yet** (TECH_PLAN gotcha 19). The route
+  exists now: upload a 2 GB file from the laptop over the ts.net address. If it fails or times
+  out, lower `MAX_UPLOAD_SIZE_MB` and note why.
+- **Upload panel covers the bottom of the list** while it is open (by design, DESIGN §3.13). It
+  collapses with ⌄ and hides itself 4 s after everything succeeds; a failed row keeps it open.
+- **Tapping a file opens `/api/files/{id}/view`** — the raw file inline when it's safe, otherwise
+  it downloads. S8 points rows at the preview page.
 - **Not checked at a true 375px in S2.** Headless Firefox won't go below 500px wide. The
   login form is max 360px and the modal is full width minus 16px each side, so it should fit;
   check on the phone in S3 (same for the Settings page).
@@ -342,3 +370,19 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S5 (your call)** — Links: a "Use http://" switch on the form. Backend default stays https; the
   switch, when sent, sets the scheme even over a typed one, and the form keeps it in sync with
   what you type.
+- **S6** — Uploads are one request per file (TECH_PLAN §9), so the brief's "multiple files in one
+  request" test is "five files, one request each".
+- **S6** — Types come from a fixed extension table in `storage.py`, not Python's `mimetypes`
+  (which reads the OS's mime.types, so the container and a local run could disagree). SVG,
+  HTML, XML and JS are kind "other".
+- **S6** — Display names also lose Unicode bidi overrides (so `photo\u202egpj.exe` can't show as
+  `photoexe.jpg`); zero-width joiners stay for Indic names. A cut 300-char name keeps its extension.
+- **S6** — Rename to an empty name → 422 "Enter a name." (an upload with no name is "unnamed").
+- **S6** — Files list ties (same second) break by upload order (`rowid`), since ids are random.
+- **S6** — File responses are `Cache-Control: private, no-cache` (revalidate with ETag), not
+  `no-store` like pages: photos and video don't re-download on every view, and nothing is
+  shared-cacheable.
+- **S6** — No Upload button in the Files header: the sidebar (desktop) and the tab bar (phone)
+  already have one on every page.
+- **S6** — A dropped folder is skipped; only files upload.
+

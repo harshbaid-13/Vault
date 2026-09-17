@@ -52,3 +52,18 @@
   <button class="icon-btn row__action" type="button" data-sheet-open="sheet-link" data-sheet-title="{{ link.title }}" data-item="/api/links/{{ link.id }}" data-edit="/links/{{ link.id }}/edit" data-copy="{{ link.url }}"{% if link.favorite %} data-favorite{% endif %} aria-haspopup="dialog" aria-label="More actions for {{ link.title }}">{{ icon("ellipsis") }}</button>
 </li>
 {%- endmacro -%}
+
+{#- A Files row. The name truncates in the middle so the extension stays visible. S8 points the
+    title at the preview page; until then it opens /view (inline when safe, else a download). -#}
+{%- macro file_row(file) -%}
+{%- set cut = [file.name | length - 8, 0] | max -%}
+<li class="row">
+  <span class="icon icon--{{ {'image': 'image', 'video': 'video', 'pdf': 'file-text', 'text': 'file-text'}.get(file.kind, 'file') }} row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="/api/files/{{ file.id }}/view"><span class="name"><span class="name__head">{{ file.name[:cut] }}</span><span class="name__tail">{{ file.name[cut:] }}</span></span></a>
+    <span class="row__meta row__meta--data">{{ file.size | size }} · {{ file.created_at | ago }}</span>
+  </div>
+  {% if file.favorite %}<span class="pin-mark" aria-label="Favorite">{{ icon("star-filled", "sm") }}</span>{% endif %}
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="{{ file.name }}" data-item="/api/files/{{ file.id }}" data-download="/api/files/{{ file.id }}/download" data-rename="{{ file.name }}" data-copy="{{ file.name }}"{% if file.favorite %} data-favorite{% endif %} aria-haspopup="dialog" aria-label="More actions for {{ file.name }}">{{ icon("ellipsis") }}</button>
+</li>
+{%- endmacro -%}

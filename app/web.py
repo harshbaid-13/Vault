@@ -101,5 +101,6 @@ def render(request: Request, name: str, status_code: int = 200, **context: Any) 
     which the JS swaps into <main> after a change."""
     context.setdefault("section", None)
     context["layout"] = "partial.html" if request.query_params.get("partial") == "1" else "base.html"
-    context.update(sections=SECTIONS, more_sections=MORE_SECTIONS)
+    context.update(sections=SECTIONS, more_sections=MORE_SECTIONS,
+                   max_upload_bytes=request.app.state.settings.max_upload_size_mb * 1024 * 1024)
     return templates.TemplateResponse(request, name, context, status_code=status_code)

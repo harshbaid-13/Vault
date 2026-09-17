@@ -18,7 +18,10 @@
   // must never run inside the app.
   const IS_APP = 'app' in document.body.dataset;
 
-  const MAX_UPLOAD_BYTES = 2 * 1024 ** 3;
+  // The server's MAX_UPLOAD_SIZE_MB, so a file that is too big fails before it is sent.
+  const MAX_UPLOAD_BYTES = Number(document.body.dataset.maxUpload) || 2 * 1024 ** 3;
+  const MAX_UPLOAD_TEXT = MAX_UPLOAD_BYTES % 1024 ** 3 === 0
+    ? `${MAX_UPLOAD_BYTES / 1024 ** 3} GB` : `${Math.round(MAX_UPLOAD_BYTES / 1024 ** 2)} MB`;
   const COPY_FALLBACK_MESSAGE =
     'Press and hold to copy — open the vault over HTTPS for one-tap copy.';
   const OFFLINE_MESSAGE = "Can't reach the vault. Is Tailscale connected?";
@@ -311,6 +314,20 @@
       case 'copy':
         copy(item, copySource(item.dataset.copyFrom ? item : trigger));
         break;
+      case 'download':
+        // A link with `download` doesn't count as leaving the page, so uploads carry on.
+        if (trigger?.dataset.download) {
+          const link = el('a');
+          link.href = trigger.dataset.download;
+          link.download = '';
+          document.body.append(link);
+          link.click();
+          link.remove();
+        }
+        break;
+      case 'rename':
+        if (trigger?.dataset.rename !== undefined) openRename(trigger);
+        break;
       case 'edit':
         if (trigger?.dataset.edit) window.location.href = trigger.dataset.edit;
         break;
@@ -428,7 +445,7 @@
       name: file.name, size: String(file.size), state: 'waiting', progress: '0',
     });
     if (file.size > MAX_UPLOAD_BYTES) {
-      Object.assign(row.dataset, { state: 'failed', error: 'Too large (max 2 GB)', final: 'true' });
+      Object.assign(row.dataset, { state: 'failed', error: `Too large (max ${MAX_UPLOAD_TEXT})`, final: 'true' });
     }
     const line = el('div', 'upload-row__line');
     line.append(nameNode(file.name, 'upload-row__name'), el('span', 'upload-row__size', formatSize(file.size)));
@@ -480,8 +497,13 @@
     $('[data-upload-dismiss]', panel).hidden = active > 0;
   }
 
-  let uploading = false;
   let autoHideTimer;
+  // Two at a time in the app; the mockup's fake upload runs one.
+  const PARALLEL_UPLOADS = IS_APP ? 2 : 1;
+  const uploadFiles = new WeakMap();
+  const uploadRequests = new WeakMap();
+
+  const uploadsActive = () => $$('.upload-row').some((row) => ['waiting', 'uploading'].includes(row.dataset.state));
 
   function addUploads(files) {
     if (!files.length) return;
@@ -489,29 +511,78 @@
     panel.hidden = false;
     clearTimeout(autoHideTimer);
     const list = $('[data-upload-list]', panel);
-    files.forEach((file) => list.append(uploadRow(file)));
+    files.forEach((file) => {
+      const row = uploadRow(file);
+      uploadFiles.set(row, file);
+      list.append(row);
+    });
     updateUploadTitle();
     pump();
   }
 
   function pump() {
-    if (uploading) return;
-    // Finish the row already uploading before starting the next waiting one,
-    // so only one file ever uploads at a time.
     const rows = $$('.upload-row');
-    const next = rows.find((row) => row.dataset.state === 'uploading')
-      || rows.find((row) => row.dataset.state === 'waiting');
-    updateUploadTitle();
-    if (!next) return;
-    uploading = true;
-    next.dataset.state = 'uploading';
-    renderRow(next);
-    updateUploadTitle();
-    simulateUpload(next, () => {
-      uploading = false;
-      pump();
-      if (!uploading) uploadsSettled();
+    let active = rows.filter((row) => row.dataset.state === 'uploading').length;
+    rows.filter((row) => row.dataset.state === 'waiting').forEach((row) => {
+      if (active >= PARALLEL_UPLOADS) return;
+      active += 1;
+      row.dataset.state = 'uploading';
+      row.dataset.progress = '0';
+      renderRow(row);
+      (IS_APP ? sendUpload : simulateUpload)(row, () => {
+        pump();
+        if (!uploadsActive()) uploadsSettled();
+      });
     });
+    updateUploadTitle();
+  }
+
+  // One raw-body request per file (TECH_PLAN §8 gotcha 9). XMLHttpRequest, because fetch
+  // can't report upload progress.
+  function sendUpload(row, done) {
+    const file = uploadFiles.get(row);
+    const xhr = new XMLHttpRequest();
+    uploadRequests.set(row, xhr);
+    const finish = (state, error = '', final = false) => {
+      Object.assign(row.dataset, { state, error, final: String(final) });
+      renderRow(row);
+      done();
+    };
+    xhr.open('POST', '/api/files');
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    xhr.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
+    xhr.upload.addEventListener('progress', (event) => {
+      if (!event.lengthComputable || row.dataset.state !== 'uploading') return;
+      row.dataset.progress = String(Math.floor((event.loaded / event.total) * 100));
+      renderRow(row);
+    });
+    xhr.addEventListener('load', () => {
+      if (xhr.status === 201) {
+        finish('done');
+        refreshAfterUpload();
+        return;
+      }
+      let message = '';
+      try {
+        message = JSON.parse(xhr.responseText).error;
+      } catch {
+        /* not JSON */
+      }
+      if (xhr.status === 401) message = 'Logged out. Reload the page to log in.';
+      finish('failed', message || "Couldn't upload. Try again.", xhr.status === 413);
+    });
+    xhr.addEventListener('error', () => finish('failed', 'Connection lost'));
+    xhr.addEventListener('abort', () => done());
+    xhr.send(file);
+  }
+
+  // The Files list re-renders from the server after each upload, a moment later so a batch
+  // of small files refreshes once.
+  let refreshTimer;
+  function refreshAfterUpload() {
+    if (!$('[data-refresh-after-upload]')) return;
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => refreshMain().catch(failed), 300);
   }
 
   function uploadsSettled() {
@@ -532,6 +603,48 @@
     panel.hidden = true;
     $('[data-upload-list]', panel).replaceChildren();
   }
+
+  // Pages are real page loads, so leaving cancels uploads: ask first (TECH_PLAN gotcha 13).
+  window.addEventListener('beforeunload', (event) => {
+    if (!uploadsActive()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
+  /* ---- Drag and drop (desktop) ---------------------------------------- */
+
+  let dragDepth = 0;
+  const dropOverlay = el('div', 'drop-overlay');
+  dropOverlay.hidden = true;
+  dropOverlay.append(icon('upload', 'icon--lg'), el('p', 'drop-overlay__text', 'Drop to upload'));
+  if (IS_APP && $('.tabbar, .sidebar')) document.body.append(dropOverlay);
+
+  const draggingFiles = (event) => Array.from(event.dataTransfer?.types || []).includes('Files');
+
+  document.addEventListener('dragenter', (event) => {
+    if (!dropOverlay.isConnected || !draggingFiles(event)) return;
+    event.preventDefault();
+    dragDepth += 1;
+    dropOverlay.hidden = false;
+  });
+  document.addEventListener('dragover', (event) => {
+    if (dropOverlay.isConnected && draggingFiles(event)) event.preventDefault();
+  });
+  document.addEventListener('dragleave', (event) => {
+    if (!dropOverlay.isConnected || !draggingFiles(event)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) dropOverlay.hidden = true;
+  });
+  document.addEventListener('drop', (event) => {
+    if (!dropOverlay.isConnected || !draggingFiles(event)) return;
+    event.preventDefault();
+    dragDepth = 0;
+    dropOverlay.hidden = true;
+    // A dropped folder shows up as a File with no type and can't be read; skip those.
+    const items = Array.from(event.dataTransfer.items || []);
+    addUploads(Array.from(event.dataTransfer.files)
+      .filter((file, index) => !items[index]?.webkitGetAsEntry?.()?.isDirectory));
+  });
 
   /* MOCKUP ONLY — fake progress so the panel can be reviewed on a phone.
      S6 replaces this with a real XMLHttpRequest and upload.onprogress. */
@@ -690,6 +803,49 @@
       clearTimeout(timer);
       // MOCKUP ONLY: pretend the save took 600ms. S5 posts the form here.
       timer = setTimeout(() => { status.textContent = 'Saved'; }, 600);
+    });
+  }
+
+  /* ---- Rename (files) ------------------------------------------------ */
+
+  let renameTrigger = null;
+
+  function openRename(trigger) {
+    const modal = document.getElementById('modal-rename');
+    if (!modal) return;
+    renameTrigger = trigger;
+    const input = $('input', modal);
+    input.value = trigger.dataset.rename;
+    $('[data-rename-error]', modal).textContent = '';
+    modal.showModal();
+    input.focus();
+    // Select the name but not the extension, like a file manager.
+    const dot = input.value.lastIndexOf('.');
+    input.setSelectionRange(0, dot > 0 ? dot : input.value.length);
+  }
+
+  function initRenameForm(form) {
+    const error = $('[data-rename-error]', form);
+    const submit = $('button[type="submit"]', form);
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const name = form.elements.name.value;
+      if (!name.trim()) {
+        error.textContent = 'Enter a name.';
+        return;
+      }
+      submit.disabled = true;
+      try {
+        await api('PATCH', renameTrigger.dataset.item, { name });
+        form.closest('dialog').close();
+        await refreshMain();
+        toast('Renamed');
+      } catch (problem) {
+        if (problem.status === 401) failed(problem);
+        else error.textContent = problem.message;
+      } finally {
+        submit.disabled = false;
+      }
     });
   }
 
@@ -893,13 +1049,11 @@
     else if ('modalOpen' in data) document.getElementById(data.modalOpen)?.showModal();
     else if ('close' in data) target.closest('dialog')?.close();
     else if ('toast' in data) toast(data.toast);
-    else if ('upload' in data) {
-      // S6 replaces this with the real upload.
-      if (IS_APP) toast('Uploading is not built yet (stage S6).', { error: true });
-      else uploadInput.click();
-    }
+    else if ('upload' in data) uploadInput.click();
     else if ('uploadCancel' in data) {
-      target.closest('.upload-row').remove();
+      const row = target.closest('.upload-row');
+      row.remove();
+      uploadRequests.get(row)?.abort();
       updateUploadTitle();
       if (!$('.upload-row')) dismissUploads();
     } else if ('uploadRetry' in data) {
@@ -935,6 +1089,7 @@
   $$('[data-autosave]').forEach(initAutosave);
   $$('[data-editor]').forEach(initEditor);
   $$('[data-link-form]').forEach(initLinkForm);
+  $$('[data-rename-form]').forEach(initRenameForm);
   $$('[data-retry-after]').forEach(initRetryCountdown);
   $$('[data-password-form]').forEach(initPasswordForm);
   if ($('[data-check]')) runConnectionChecks();

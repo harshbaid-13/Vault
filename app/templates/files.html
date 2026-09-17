@@ -1,0 +1,46 @@
+{% extends layout %}
+{% from "macros.html" import file_row, icon with context %}
+{% block content %}
+{% if files %}
+<div class="toolbar"><span class="toolbar__count">{{ files | length }} file{{ "" if files | length == 1 else "s" }} · {{ files | sum(attribute="size") | size }}</span></div>
+<h2 class="visually-hidden">Files</h2>
+<ul class="list" data-refresh-after-upload>
+{% for file in files %}
+{{ file_row(file) }}
+{% endfor %}
+</ul>
+{% else %}
+<div class="empty" data-refresh-after-upload>
+  {{ icon("folder", "lg") }}
+  <p>No files yet. Tap the upload button, or drop files here on a computer.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block dialogs %}
+<dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-file-title">File</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="download">{{ icon("download", "sm") }}Download</button></li>
+    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy name</button></li>
+    <li><button class="sheet__item" type="button" data-action="favorite">{{ icon("star", "sm") }}Favorite</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-rename" aria-labelledby="modal-rename-title">
+  <form class="modal__form" data-rename-form novalidate>
+    <h2 class="modal__title" id="modal-rename-title">Rename</h2>
+    <div class="field">
+      <label class="visually-hidden" for="rename-name">New name</label>
+      <input class="input" id="rename-name" name="name" type="text" maxlength="255" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+    </div>
+    <p class="field__error" data-rename-error aria-live="polite"></p>
+    <div class="modal__actions">
+      <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+      <button class="btn btn--primary" type="submit">Rename</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

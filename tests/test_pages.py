@@ -2,7 +2,7 @@ import pytest
 
 from app.main import PLACEHOLDERS
 
-PAGES = list(PLACEHOLDERS) + ["/settings", "/clipboard", "/notes", "/links"]
+PAGES = list(PLACEHOLDERS) + ["/settings", "/clipboard", "/notes", "/links", "/files"]
 
 SIDEBAR = ["/", "/files", "/photos", "/notes", "/clipboard", "/links", "/favorites", "/settings"]
 
@@ -18,7 +18,7 @@ def test_pages_render_the_shell(auth_client, path):
     assert 'id="sheet-more"' in html
     assert 'class="toast-region"' in html
     assert '<link rel="stylesheet" href="/static/css/app.css">' in html
-    assert "<body class=\"app\" data-app>" in html
+    assert "<body class=\"app\" data-app data-max-upload=\"2097152\">" in html
     if path in SIDEBAR:
         assert f'href="{path}" aria-current="page"' in html
     assert html.count('aria-current="page"') <= 2  # sidebar link + tab, never two sections

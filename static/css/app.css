@@ -1938,3 +1938,33 @@ textarea.input {
 @media (min-width: 900px) {
   .mobile-only { display: none !important; }
 }
+
+/* ==== Drop overlay (desktop drag and drop) ============================= */
+
+.drop-overlay {
+  position: fixed;
+  inset: var(--space-3);
+  z-index: var(--z-scrim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  border: 2px dashed var(--c-accent);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface-raised);
+  color: var(--c-accent);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+.drop-overlay[hidden] {
+  display: none;
+}
+
+/* A count alone in the toolbar lines up with the rows' text. */
+.toolbar__count:only-child {
+  margin-left: var(--space-3);
+}

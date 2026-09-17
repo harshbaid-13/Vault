@@ -57,6 +57,10 @@ class Settings:
     def db_path(self) -> Path:
         return self.data_dir / "vault.db"
 
+    @property
+    def files_dir(self) -> Path:
+        return self.data_dir / "files"
+
     @classmethod
     def from_env(cls, environ: dict[str, str] | None = None) -> "Settings":
         env = os.environ if environ is None else environ
