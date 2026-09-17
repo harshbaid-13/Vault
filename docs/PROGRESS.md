@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** S3 (phone access) — code and guide done; your Tailscale setup + phone check is next
+**Current stage:** S3 (phone access) — done; S4 (Clipboard) is next
 **Last updated:** 2026-09-17, after S3
 
 Claude: update this file at the end of every stage. Keep it short.
@@ -36,7 +36,7 @@ runs at the end of every one.
 - [x] S2 — Login: `cli set-password`, Argon2id, session + session_version, auth allowlist,
       global lockout, Origin check, safe `next`, logout, Change password in Settings
       (current password required first — TECH_PLAN §5 #23)
-- [ ] S3 — Phone access: `docs/TAILSCALE.md` (fetched install steps), `tailscale serve`,
+- [x] S3 — Phone access: `docs/TAILSCALE.md` (fetched install steps), `tailscale serve`,
       Secure cookie + allowed origin, Settings shows HTTPS ✓ / Clipboard ✓, 2 GB upload probe
 - [ ] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
       delete, COPY from `.clip__source`; "How a feature is structured" into `CLAUDE.md`
@@ -131,11 +131,13 @@ runs at the end of every one.
   About (version, last backup — "Never" until S10), Log out. Moved to `app/home.py`; `size`
   filter in `web.py`. 114 tests pass. Checked in Docker + headless Firefox: over
   `http://127.0.0.1` Settings shows HTTPS No, one-tap copy Yes (a local address counts as secure).
-  Docker was already `enabled` on boot on this computer. Tailscale isn't installed yet.
+  Docker was already `enabled` on boot on this computer.
+  **Your check (2026-09-17):** Tailscale on the office computer (`office-vault`) and the
+  OnePlus phone, `tailscale serve` → `https://office-vault.tail1234.ts.net` (tailnet only),
+  `.env` set to that origin + Secure cookie, confirmed by you as working on the phone.
 
 ## Next
-You: follow `docs/TAILSCALE.md`, then on the phone with Wi-Fi off open the ts.net address, log
-in, and check Settings shows HTTPS Yes ✓ and One-tap copy Yes ✓. Then S4 — Clipboard.
+S4 — Clipboard, from `docs/PLAYBOOK.md` (the reference feature).
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
@@ -164,7 +166,6 @@ in, and check Settings shows HTTPS Yes ✓ and One-tap copy Yes ✓. Then S4 —
 
 - **2 GB upload through `tailscale serve` not tested yet** (TECH_PLAN gotcha 19). There is no
   upload route until S6, so the probe moves to S6.
-- **Not yet seen on the real phone over Tailscale** — that's your S3 check.
 - **Not checked at a true 375px in S2.** Headless Firefox won't go below 500px wide. The
   login form is max 360px and the modal is full width minus 16px each side, so it should fit;
   check on the phone in S3 (same for the Settings page).
