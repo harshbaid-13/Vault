@@ -8,6 +8,24 @@ from starlette.responses import Response
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
+
+def size(num_bytes: int) -> str:
+    """1536 → "1.5 KB". One decimal under 10, none above. Same rule as formatSize() in app.js."""
+    value = float(num_bytes)
+    for unit in ("B", "KB", "MB", "GB"):
+        if value < 1024 or unit == "GB":
+            break
+        value /= 1024
+    if unit == "GB" and value >= 1024:
+        value /= 1024
+        unit = "TB"
+    if unit == "B":
+        return f"{int(value)} B"
+    return f"{value:.1f} {unit}" if value < 10 else f"{value:.0f} {unit}"
+
+
+templates.env.filters["size"] = size
+
 # Sidebar order. (key, href, label, icon)
 SECTIONS = [
     ("home", "/", "Home", "house"),

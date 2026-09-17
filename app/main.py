@@ -11,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import Response
 
-from app import auth, db
+from app import auth, db, home
 from app.config import Settings
 from app.security import (
     AuthGateMiddleware,
@@ -78,12 +78,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"ok": True}
 
     app.include_router(auth.router)
-
-    # S3 fills in the rest of Settings (storage, counts, HTTPS check) and moves it to home.py.
-    @app.get("/settings", response_class=HTMLResponse)
-    def settings_page(request: Request) -> Response:
-        return render(request, "settings.html", section="settings", title="Settings",
-                      min_password_length=auth.MIN_PASSWORD_LENGTH)
+    app.include_router(home.router)
 
     for path, (section, title, icon, stage) in PLACEHOLDERS.items():
         app.add_api_route(path, placeholder(section, title, icon, stage), methods=["GET"], response_class=HTMLResponse)

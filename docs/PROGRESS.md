@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S2 (login) — built, tested, checked in Docker; your hands-on check is next
-**Last updated:** 2026-09-17, after S2
+**Current stage:** S3 (phone access) — code and guide done; your Tailscale setup + phone check is next
+**Last updated:** 2026-09-17, after S3
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -122,10 +122,20 @@ runs at the end of every one.
   still 429, logout. Headless Firefox (500px — its smallest window — and 1280, light and dark):
   countdown ticks and re-enables, modal errors from client and server, success toast, both
   Log out buttons work, 16px inputs, 44px buttons, no horizontal scroll.
+- **S3** — `docs/TAILSCALE.md`: install on Ubuntu 26.04 from Tailscale's apt repo (fetched
+  from tailscale.com and pkgs.tailscale.com on 2026-09-17), phone + laptop, rename to
+  `office-vault`, disable key expiry, MagicDNS + HTTPS, `sudo tailscale serve --bg 8000`
+  (status / off / reset), `.env` changes, why no ports are open, boot checks, troubleshooting.
+  Settings is now complete: Vault (storage used · free, file/note/clip/link counts),
+  Connection (HTTPS and one-tap copy, checked in the browser), Security (Change password),
+  About (version, last backup — "Never" until S10), Log out. Moved to `app/home.py`; `size`
+  filter in `web.py`. 114 tests pass. Checked in Docker + headless Firefox: over
+  `http://127.0.0.1` Settings shows HTTPS No, one-tap copy Yes (a local address counts as secure).
+  Docker was already `enabled` on boot on this computer. Tailscale isn't installed yet.
 
 ## Next
-You: the S2 hands-on check (commands in the S2 hand-off), then commit S1 + S2. Then S3 —
-phone access over Tailscale, from `docs/PLAYBOOK.md`.
+You: follow `docs/TAILSCALE.md`, then on the phone with Wi-Fi off open the ts.net address, log
+in, and check Settings shows HTTPS Yes ✓ and One-tap copy Yes ✓. Then S4 — Clipboard.
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
@@ -152,9 +162,12 @@ phone access over Tailscale, from `docs/PLAYBOOK.md`.
   passing a 2 GB body (S3/S6), Chrome rendering the
   PDF iframe without a sandbox CSP (S8).
 
+- **2 GB upload through `tailscale serve` not tested yet** (TECH_PLAN gotcha 19). There is no
+  upload route until S6, so the probe moves to S6.
+- **Not yet seen on the real phone over Tailscale** — that's your S3 check.
 - **Not checked at a true 375px in S2.** Headless Firefox won't go below 500px wide. The
   login form is max 360px and the modal is full width minus 16px each side, so it should fit;
-  check on the phone in S3.
+  check on the phone in S3 (same for the Settings page).
 - **Lockout is in memory**, so restarting the container clears it. Fine for one user.
 
 ## Decisions log
@@ -239,3 +252,10 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S2** — Minimum password length is **4**, not the playbook's 12 (your call). Accepted
   trade-off: the lockout makes guessing over the network slow, but anyone who gets a copy of
   `vault.db` or a backup could crack a 4-letter hash in hours, so keep backups private.
+- **S3** — "Clipboard access" on Settings reads **One-tap copy**: COPY works on plain http too
+  (fallback), so the line says what HTTPS actually adds.
+- **S3** — HTTPS is checked in the browser (`location.protocol`), not on the server: behind
+  `tailscale serve` the app only ever sees plain http, and `X-Forwarded-*` isn't trusted.
+- **S3** — Storage "used" is the total size of uploaded files; "free" is free space on the disk
+  holding `./data`.
+- **S3** — The 2 GB upload probe moves to S6 (needs the upload route).

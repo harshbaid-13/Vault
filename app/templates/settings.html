@@ -1,5 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
+<section aria-labelledby="s-vault">
+  <div class="section-head"><h2 class="section-head__title" id="s-vault">Vault</h2></div>
+  <dl class="kv">
+    <div class="kv__row"><dt class="kv__key">Storage</dt><dd class="kv__value">{{ counts.used | size }} used · {{ free | size }} free</dd></div>
+    <div class="kv__row"><dt class="kv__key">Files</dt><dd class="kv__value">{{ counts.files }}</dd></div>
+    <div class="kv__row"><dt class="kv__key">Notes</dt><dd class="kv__value">{{ counts.notes }}</dd></div>
+    <div class="kv__row"><dt class="kv__key">Clips</dt><dd class="kv__value">{{ counts.clips }}</dd></div>
+    <div class="kv__row"><dt class="kv__key">Links</dt><dd class="kv__value">{{ counts.links }}</dd></div>
+  </dl>
+</section>
+<section aria-labelledby="s-connection">
+  <div class="section-head"><h2 class="section-head__title" id="s-connection">Connection</h2></div>
+  <dl class="kv">
+    {# Only the browser knows: behind tailscale serve the app itself sees plain http. #}
+    <div class="kv__row"><dt class="kv__key">HTTPS</dt><dd class="kv__value" data-check="https">Checking…</dd></div>
+    <div class="kv__row"><dt class="kv__key">One-tap copy</dt><dd class="kv__value" data-check="clipboard">Checking…</dd></div>
+  </dl>
+  <p class="section-note" data-check-help hidden>For both, open the vault at its https://….ts.net address (set up in docs/TAILSCALE.md).</p>
+</section>
 <section aria-labelledby="s-security">
   <div class="section-head"><h2 class="section-head__title" id="s-security">Security</h2></div>
   <ul class="list">
@@ -8,6 +27,13 @@
       <span class="icon icon--chevron-right row__icon" aria-hidden="true"></span>
     </li>
   </ul>
+</section>
+<section aria-labelledby="s-about">
+  <div class="section-head"><h2 class="section-head__title" id="s-about">About</h2></div>
+  <dl class="kv">
+    <div class="kv__row"><dt class="kv__key">Version</dt><dd class="kv__value">{{ version }}</dd></div>
+    <div class="kv__row"><dt class="kv__key">Last backup</dt><dd class="kv__value">{{ last_backup }}</dd></div>
+  </dl>
 </section>
 <div class="stack">
   <form action="/logout" method="post"><button class="btn btn--secondary btn--block" type="submit"><span class="icon icon--log-out icon--sm" aria-hidden="true"></span>Log out</button></form>

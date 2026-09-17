@@ -4,7 +4,7 @@ A private place for your files, photos, notes, clipboard snippets and links. It 
 your own always-on computer and you reach it from your own devices over Tailscale.
 Nothing is public and nothing goes to a cloud service.
 
-> **Status:** under construction (stage S2 — login works, no features yet).
+> **Status:** under construction (stage S3 — login and phone access over Tailscale work, no features yet).
 > The full guide — installing Docker and Tailscale, phone access, backup, restore,
 > troubleshooting — is written in stage S10. Progress: `docs/PROGRESS.md`.
 
@@ -20,7 +20,9 @@ docker compose run --rm vault python -m app.cli set-password   # choose your pas
 ```
 
 Open <http://localhost:8000> on this computer and log in. Forgot the password? Run the
-`set-password` line again: it sets a new one and logs out every device. `docker compose logs vault` shows the app's
+`set-password` line again: it sets a new one and logs out every device.
+
+To open it from your phone and laptop, follow [docs/TAILSCALE.md](docs/TAILSCALE.md). `docker compose logs vault` shows the app's
 log; `docker compose down` stops it. Your data stays in `./data` either way.
 
 ## For development (no Docker)

@@ -1411,6 +1411,15 @@ button.sidebar__link {
   text-align: right;
 }
 
+.kv__value--ok { color: var(--c-success); }
+.kv__value--bad { color: var(--c-danger); }
+
+.section-note {
+  padding: var(--space-2) var(--space-4) 0;
+  color: var(--c-text-secondary);
+  font-size: var(--fs-sm);
+}
+
 .stack {
   display: flex;
   flex-direction: column;

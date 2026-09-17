@@ -533,6 +533,25 @@
     });
   }
 
+  /* ---- Settings: connection checks ----------------------------------- */
+  /* The server sees plain http behind tailscale serve, so only the page can tell. */
+
+  function runConnectionChecks() {
+    const results = {
+      https: window.location.protocol === 'https:',
+      clipboard: window.isSecureContext && Boolean(navigator.clipboard),
+    };
+    let allOk = true;
+    $$('[data-check]').forEach((cell) => {
+      const ok = results[cell.dataset.check];
+      allOk = allOk && ok;
+      cell.textContent = ok ? 'Yes ✓' : 'No';
+      cell.classList.add(ok ? 'kv__value--ok' : 'kv__value--bad');
+    });
+    const help = $('[data-check-help]');
+    if (help) help.hidden = allOk;
+  }
+
   /* ---- Photo viewer --------------------------------------------------- */
 
   function initViewer(viewer) {
@@ -648,6 +667,7 @@
   $$('[data-autosave]').forEach(initAutosave);
   $$('[data-retry-after]').forEach(initRetryCountdown);
   $$('[data-password-form]').forEach(initPasswordForm);
+  if ($('[data-check]')) runConnectionChecks();
   $$('.upload-row').forEach(renderRow);
   updateUploadTitle();
   const viewer = $('.viewer');
