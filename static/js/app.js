@@ -4,8 +4,8 @@
  * data-attributes through event delegation, so templates never carry
  * inline script and a strict Content-Security-Policy keeps working.
  *
- * Blocks marked MOCKUP ONLY fake a server round-trip and are replaced by
- * real requests in the build stages.
+ * Blocks marked MOCKUP ONLY fake a server round-trip for the static
+ * mockups; in the app, the same actions call /api.
  */
 (() => {
   'use strict';
@@ -21,6 +21,7 @@
   const MAX_UPLOAD_BYTES = 2 * 1024 ** 3;
   const COPY_FALLBACK_MESSAGE =
     'Press and hold to copy — open the vault over HTTPS for one-tap copy.';
+  const OFFLINE_MESSAGE = "Can't reach the vault. Is Tailscale connected?";
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -57,6 +58,47 @@
     box.classList.add('is-visible');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => box.classList.remove('is-visible'), error ? 4000 : 2000);
+  }
+
+  /* ---- API calls and refreshing the page ------------------------------ */
+
+  // JSON in, JSON out. Throws an Error whose message is the sentence to show
+  // in a toast; error.status is set when the server answered.
+  async function api(method, url, body, { keepalive = false } = {}) {
+    const options = { method, keepalive, headers: {} };
+    if (body !== undefined) {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(body);
+    }
+    let response;
+    try {
+      response = await fetch(url, options);
+    } catch {
+      throw new Error(OFFLINE_MESSAGE);
+    }
+    if (response.ok) return response.status === 204 ? null : response.json();
+    const answer = await response.json().catch(() => ({}));
+    const error = new Error(answer.error || "That didn't work. Try again.");
+    error.status = response.status;
+    throw error;
+  }
+
+  // After a change, swap in a fresh copy of <main> from the same URL. The
+  // server renders it, so no row HTML is ever built here.
+  async function refreshMain() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('partial', '1');
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Saved, but the list didn't refresh. Reload the page.");
+    $('main').innerHTML = await response.text();
+  }
+
+  function failed(error) {
+    if (error.status === 401) {
+      window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+    toast(error.message, { error: true });
   }
 
   /* ---- Copy ----------------------------------------------------------- */
@@ -135,10 +177,22 @@
     $('.clip__content', clip).hidden = !show;
   }
 
-  function toggleStar(button) {
-    const on = button.getAttribute('aria-pressed') !== 'true';
+  function setStar(button, on) {
     button.setAttribute('aria-pressed', String(on));
     button.setAttribute('aria-label', `${on ? 'Unfavorite' : 'Favorite'} ${button.dataset.name || ''}`.trim());
+  }
+
+  // No toast: the icon changing is the feedback. It flips back if the save fails.
+  async function toggleStar(button) {
+    const on = button.getAttribute('aria-pressed') !== 'true';
+    setStar(button, on);
+    if (!button.dataset.item) return;
+    try {
+      await api('PATCH', button.dataset.item, { favorite: on });
+    } catch (error) {
+      setStar(button, !on);
+      failed(error);
+    }
   }
 
   // Revealed clips hide again when the page is returned to from history.
@@ -156,6 +210,9 @@
     if (!dialog) return;
     sheetTrigger = trigger;
     const title = $('.sheet__title', dialog);
+    if (trigger.dataset.sheetTitleFrom) {
+      trigger.dataset.sheetTitle = $(trigger.dataset.sheetTitleFrom).value.trim() || 'Untitled';
+    }
     if (title && trigger.dataset.sheetTitle) title.textContent = trigger.dataset.sheetTitle;
     // Toggle actions say what they will do to this item, not what they did last.
     const favorite = $('[data-action="favorite"]', dialog);
@@ -199,33 +256,84 @@
     modal.showModal();
   }
 
+  // A PATCH from a list row's sheet, then the list is re-rendered.
+  async function patchAndRefresh(url, fields, message) {
+    try {
+      await api('PATCH', url, fields);
+      await refreshMain();
+      toast(message);
+    } catch (error) {
+      failed(error);
+    }
+  }
+
+  let deleteTrigger = null;
+
+  async function deleteItem(trigger) {
+    try {
+      await api('DELETE', trigger.dataset.item);
+    } catch (error) {
+      // Already gone is what was asked for.
+      if (error.status !== 404) {
+        failed(error);
+        return;
+      }
+    }
+    if (trigger.dataset.afterDelete) {
+      editorDeleted = true;
+      window.location.replace(trigger.dataset.afterDelete);
+      return;
+    }
+    try {
+      await refreshMain();
+      toast('Deleted');
+    } catch (error) {
+      failed(error);
+    }
+  }
+
   function runAction(item) {
     const dialog = item.closest('dialog');
     const name = sheetTrigger?.dataset.sheetTitle
       || (dialog && $('.sheet__title', dialog)?.textContent)
       || 'this item';
     dialog?.close();
+    // Row and editor triggers carry data-item (their /api URL). Without it
+    // this is a static mockup and the action is only pretended.
+    const trigger = sheetTrigger;
+    const url = trigger?.dataset.item;
+    const isFavorite = Boolean(trigger && 'favorite' in trigger.dataset);
+    const isHidden = Boolean(trigger && 'clipHidden' in trigger.dataset);
     switch (item.dataset.action) {
       case 'toast':
         toast(item.dataset.toast);
         break;
       case 'copy':
-        copy(item, copySource(item.dataset.copyFrom ? item : sheetTrigger));
+        copy(item, copySource(item.dataset.copyFrom ? item : trigger));
         break;
-      case 'favorite':
-        // MOCKUP ONLY: S9 sends the favorite toggle here.
-        toast(sheetTrigger && 'favorite' in sheetTrigger.dataset ? 'Removed from Favorites' : 'Added to Favorites');
+      case 'edit':
+        if (trigger?.dataset.edit) window.location.href = trigger.dataset.edit;
         break;
-      case 'hide':
-        // MOCKUP ONLY: S4 sends the hide toggle here.
-        toast(sheetTrigger && 'clipHidden' in sheetTrigger.dataset ? 'Content no longer hidden' : 'Content hidden');
+      case 'favorite': {
+        const message = isFavorite ? 'Removed from Favorites' : 'Added to Favorites';
+        if (url) patchAndRefresh(url, { favorite: !isFavorite }, message);
+        else toast(message); // MOCKUP ONLY
         break;
+      }
+      case 'hide': {
+        const message = isHidden ? 'Content no longer hidden' : 'Content hidden';
+        if (url) patchAndRefresh(url, { hidden: !isHidden }, message);
+        else toast(message); // MOCKUP ONLY
+        break;
+      }
       case 'delete':
+        deleteTrigger = trigger;
         confirmDelete(name);
         break;
       case 'confirm-delete':
-        // MOCKUP ONLY: S5/S6 send the delete request here.
-        toast('Deleted');
+        if (deleteTrigger?.dataset.item) deleteItem(deleteTrigger);
+        else toast('Deleted'); // MOCKUP ONLY
+        deleteTrigger = null;
         break;
       default:
         break;
@@ -448,6 +556,109 @@
 
   /* ---- Note / clip editor autosave ------------------------------------ */
 
+  let editorDeleted = false;
+
+  // Saves 800ms after typing stops, when the page is hidden (phone locked,
+  // app switched) and when it is left. Leaving with no title and no text
+  // deletes the item, so a stray ＋ New leaves nothing behind.
+  function initEditor(form) {
+    const url = form.dataset.editor;
+    const status = $('[data-autosave-status]', form);
+    const fields = $$('input[type="text"], textarea', form);
+    const hiddenSwitch = $('[data-editor-hidden]', form);
+    let timer;
+    let dirty = false;
+    let inFlight = false;
+    let failing = false;
+
+    const values = () => Object.fromEntries(fields.map((field) => [field.name, field.value]));
+    const isEmpty = () => fields.every((field) => !field.value.trim());
+    const clock = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
+    async function save({ keepalive = false } = {}) {
+      clearTimeout(timer);
+      if (!dirty || editorDeleted) return;
+      if (inFlight && !keepalive) {
+        timer = setTimeout(save, 300);
+        return;
+      }
+      dirty = false;
+      inFlight = true;
+      status.textContent = 'Saving…';
+      try {
+        await api('PATCH', url, values(), { keepalive });
+        failing = false;
+        if (!dirty) status.textContent = `Saved · Today, ${clock()}`;
+      } catch (error) {
+        dirty = true;
+        status.textContent = 'Not saved yet — your text is still here.';
+        // One toast, then keep retrying quietly.
+        if (!failing) toast(error.status === 401 ? 'You were logged out. Copy your text, then reload to log in.' : error.message, { error: true });
+        failing = true;
+        if (error.status !== 401 && error.status !== 404 && error.status !== 422) timer = setTimeout(save, 5000);
+      } finally {
+        inFlight = false;
+      }
+    }
+
+    form.addEventListener('submit', (event) => event.preventDefault());
+    form.addEventListener('input', (event) => {
+      if (event.target === hiddenSwitch) return;
+      dirty = true;
+      clearTimeout(timer);
+      timer = setTimeout(save, 800);
+    });
+
+    hiddenSwitch?.addEventListener('change', async () => {
+      const on = hiddenSwitch.checked;
+      try {
+        await api('PATCH', url, { hidden: on });
+      } catch (error) {
+        hiddenSwitch.checked = !on;
+        failed(error);
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') save({ keepalive: true });
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (editorDeleted) return;
+      if (isEmpty()) {
+        editorDeleted = true;
+        // sendBeacon can't send DELETE.
+        fetch(url, { method: 'DELETE', keepalive: true }).catch(() => {});
+      } else {
+        save({ keepalive: true });
+      }
+    });
+
+    // Links out of the editor wait for the last save (or the discard), so the
+    // page they open never shows stale text. pagehide above covers the rest.
+    document.addEventListener('click', async (event) => {
+      const link = event.target.closest('a[href]');
+      if (!link || event.defaultPrevented || event.button !== 0
+        || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      if (!isEmpty() && !dirty) return;
+      event.preventDefault();
+      if (isEmpty()) {
+        editorDeleted = true;
+        await api('DELETE', url).catch(() => {});
+      } else {
+        await save({ keepalive: true });
+      }
+      window.location.href = link.href;
+    });
+
+    // Coming back to a discarded item from history: it no longer exists.
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && editorDeleted) window.location.replace(form.dataset.back);
+    });
+
+    if (isEmpty()) fields[0].focus();
+  }
+
   function initAutosave(form) {
     const status = $('[data-autosave-status]', form);
     let timer;
@@ -665,6 +876,7 @@
   /* ---- Init ----------------------------------------------------------- */
 
   $$('[data-autosave]').forEach(initAutosave);
+  $$('[data-editor]').forEach(initEditor);
   $$('[data-retry-after]').forEach(initRetryCountdown);
   $$('[data-password-form]').forEach(initPasswordForm);
   if ($('[data-check]')) runConnectionChecks();

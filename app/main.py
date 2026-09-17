@@ -11,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import Response
 
-from app import auth, db, home
+from app import auth, clips, db, home
 from app.config import Settings
 from app.security import (
     AuthGateMiddleware,
@@ -20,7 +20,7 @@ from app.security import (
     SecurityHeadersMiddleware,
     add_security_headers,
 )
-from app.web import render
+from app.web import ApiError, render
 
 log = logging.getLogger("vault")
 
@@ -32,7 +32,6 @@ PLACEHOLDERS = {
     "/files": ("files", "Files", "folder", "S6"),
     "/photos": ("photos", "Photos", "image", "S8"),
     "/notes": ("notes", "Notes", "file-text", "S5"),
-    "/clipboard": ("clipboard", "Clipboard", "clipboard", "S4"),
     "/links": ("links", "Links", "link", "S5"),
     "/favorites": ("favorites", "Favorites", "star", "S9"),
     "/search": ("search", "Search", "search", "S9"),
@@ -79,6 +78,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(auth.router)
     app.include_router(home.router)
+    app.include_router(clips.router)
 
     for path, (section, title, icon, stage) in PLACEHOLDERS.items():
         app.add_api_route(path, placeholder(section, title, icon, stage), methods=["GET"], response_class=HTMLResponse)
@@ -89,6 +89,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if wants_json(request):
             return JSONResponse({"error": message}, status_code=exc.status_code, headers=exc.headers)
         return render(request, "error.html", status_code=exc.status_code, title=title, message=message)
+
+    @app.exception_handler(ApiError)
+    async def api_error(request: Request, exc: ApiError) -> Response:
+        return JSONResponse({"error": exc.message}, status_code=exc.status_code)
 
     @app.exception_handler(RequestValidationError)
     async def bad_request(request: Request, exc: RequestValidationError) -> Response:

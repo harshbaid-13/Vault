@@ -20,6 +20,12 @@ def now() -> str:
     return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def like_pattern(term: str) -> str:
+    """A LIKE pattern matching `term` anywhere, literally. Use with ESCAPE '\\'."""
+    escaped = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
 @contextmanager
 def connect(path: Path) -> Iterator[sqlite3.Connection]:
     """One short-lived connection: commits on success, rolls back on error, always closes."""

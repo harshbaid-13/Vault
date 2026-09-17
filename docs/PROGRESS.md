@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S3 (phone access) — done; S4 (Clipboard) is next
-**Last updated:** 2026-09-17, after S3
+**Current stage:** S4 (Clipboard) — built, waiting for your phone check; S5 (Notes + Links) is next
+**Last updated:** 2026-09-17, after S4
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -38,7 +38,7 @@ runs at the end of every one.
       (current password required first — TECH_PLAN §5 #23)
 - [x] S3 — Phone access: `docs/TAILSCALE.md` (fetched install steps), `tailscale serve`,
       Secure cookie + allowed origin, Settings shows HTTPS ✓ / Clipboard ✓, 2 GB upload probe
-- [ ] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
+- [x] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
       delete, COPY from `.clip__source`; "How a feature is structured" into `CLAUDE.md`
 - [ ] S5 — Notes (editor, autosave on hide/leave, discard empty) and Links (URL rules, form)
 - [ ] S6 — Files: raw-body streaming upload (2 parallel), panel, download/view allowlist,
@@ -136,8 +136,24 @@ runs at the end of every one.
   OnePlus phone, `tailscale serve` → `https://office-vault.tail1234.ts.net` (tailnet only),
   `.env` set to that origin + Secure cookie, confirmed by you as working on the phone.
 
+- **S4** — Clipboard. `app/clips.py` (SQL → pages → API): `/clipboard` list (favorites first,
+  then newest-modified), `POST /clipboard/new` → full-screen editor `/clipboard/{id}` with
+  autosave (800 ms, on hide, on leave), a Hide content switch, ★ in the header, ⋯ Copy all /
+  Delete; leaving an empty clip deletes it. `/api/clips` GET `?q=` (title + non-hidden content,
+  LIKE escaped), POST, PATCH, DELETE; lengths 200 / 100,000. Rows: title, ★ mark, 3-line
+  fading preview or ••••••••, eye for hidden clips, ⋯ (Edit, Favorite, Hide, Delete + confirm),
+  COPY from `.clip__source` (the whole text). New shared pieces: `web.ApiError`, `db.like_pattern`,
+  `?partial=1` via `{% extends layout %}`, `when` date filter, `macros.html`, `editor.html`,
+  delete confirm in `base.html`, `api()` / `refreshMain()` in `app.js`. "How a feature is
+  structured" written into `CLAUDE.md`. 150 tests pass (36 new). Headless Firefox (500px, light
+  and dark) against a local run: new → type → Saved; hide + star; list masked; COPY on a hidden
+  clip and on a 3 KB clip pasted back exactly; reveal; sheet Unhide/Unfavorite refresh the list;
+  delete confirm (Cancel focused) from the list and from the editor; empty clip discarded; a
+  quick edit then Back shows the new text; no horizontal scroll. Docker image rebuilt and healthy.
+  **Waiting for your check on the phone.**
+
 ## Next
-S4 — Clipboard, from `docs/PLAYBOOK.md` (the reference feature).
+Your S4 phone check. Then S5 — Notes and Links, from `docs/PLAYBOOK.md`.
 
 ## Known issues
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
@@ -169,6 +185,11 @@ S4 — Clipboard, from `docs/PLAYBOOK.md` (the reference feature).
 - **Not checked at a true 375px in S2.** Headless Firefox won't go below 500px wide. The
   login form is max 360px and the modal is full width minus 16px each side, so it should fit;
   check on the phone in S3 (same for the Settings page).
+- **Android back gesture right after typing** (within 0.8 s) can show the list with the old
+  text: the editor's save is sent as the page goes away and can land after the list loads.
+  Reload shows the new text; nothing is lost. The editor's own ‹ back link waits for the save.
+- **Hidden clips show in plain text in their editor.** Opening the editor is a deliberate tap;
+  the list, search and toasts stay masked.
 - **Lockout is in memory**, so restarting the container clears it. Fine for one user.
 
 ## Decisions log
@@ -260,3 +281,16 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S3** — Storage "used" is the total size of uploaded files; "free" is free space on the disk
   holding `./data`.
 - **S3** — The 2 GB upload probe moves to S6 (needs the upload route).
+- **S4** — No search box on the Clipboard page (the brief had one): DESIGN §3.9 has none, search
+  is the header 🔍 (S9). `/api/clips?q=` is built and tested.
+- **S4** — Starring or hiding a clip doesn't change `updated_at`, so it doesn't jump in the list.
+  Only title/content edits count as modified.
+- **S4** — Empty clips (no title, no text) never appear in lists: they only exist while their
+  editor is open, and the discard on leaving can land after the list has loaded.
+- **S4** — A clip with no title shows as "Untitled" (never its content, which may be hidden).
+- **S4** — The editor has no tab bar (as the D3 mockup), and its Hide content switch is a
+  checkbox at the right of the "Saved" line.
+- **S4** — After an autosave the line reads "Saved · Today, HH:MM" (device clock). A failed save
+  shows one error toast, "Not saved yet — your text is still here.", and retries every 5 s.
+- **S4** — Favorite/Hide from a row's ⋯ show a toast (as the D3 mockup); the editor's ★ doesn't
+  (DESIGN §8.15).

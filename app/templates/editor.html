@@ -1,0 +1,33 @@
+{#- The full-screen editor for clips (S4) and notes (S5). The view passes: item, noun,
+    api_url, back_url, body_field, body_label, body_placeholder, max_body, can_hide. -#}
+{% extends layout %}
+{% from "macros.html" import icon %}
+{% block topbar %}
+<a class="icon-btn topbar__back" href="{{ back_url }}" aria-label="Back to {{ title }}">{{ icon("chevron-left") }}</a>
+<h1 class="topbar__title">{{ title }}</h1>
+<div class="topbar__actions"><button class="icon-btn star" type="button" data-star data-item="{{ api_url }}" data-name="this {{ noun }}" aria-pressed="{{ 'true' if item.favorite else 'false' }}" aria-label="{{ 'Unfavorite' if item.favorite else 'Favorite' }} this {{ noun }}"><span class="icon" aria-hidden="true"></span></button><button class="icon-btn" type="button" data-sheet-open="sheet-editor" data-sheet-title-from="#editor-title" data-item="{{ api_url }}" data-after-delete="{{ back_url }}" aria-haspopup="dialog" aria-label="{{ noun | capitalize }} actions">{{ icon("ellipsis") }}</button></div>
+{% endblock %}
+{% block content %}
+<form class="editor" data-editor="{{ api_url }}" data-back="{{ back_url }}" novalidate>
+  <label class="visually-hidden" for="editor-title">Title</label>
+  <input class="editor__title" id="editor-title" name="title" type="text" value="{{ item.title }}" maxlength="200" placeholder="Title" autocomplete="off">
+  <div class="editor__meta">
+    <p class="editor__status" data-autosave-status>{% if item.title or item[body_field] %}Saved · {{ item.updated_at | when }}{% endif %}</p>
+    {% if can_hide %}<label class="editor__switch"><input type="checkbox" name="hidden" data-editor-hidden{% if item.hidden %} checked{% endif %}>Hide content</label>{% endif %}
+  </div>
+  <label class="visually-hidden" for="editor-body">{{ body_label }}</label>
+  <textarea class="editor__body" id="editor-body" name="{{ body_field }}" maxlength="{{ max_body }}" placeholder="{{ body_placeholder }}">
+{{ item[body_field] }}</textarea>
+</form>
+{% endblock %}
+{% block dialogs %}
+<dialog class="sheet" id="sheet-editor" aria-labelledby="sheet-editor-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-editor-title">{{ item.title or "Untitled" }}</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="copy" data-copy-from="#editor-body">{{ icon("copy", "sm") }}Copy all</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+{% endblock %}

@@ -1,0 +1,24 @@
+{# Row macros shared by the section pages, Home, Favorites and Search. #}
+
+{%- macro icon(name, size="") -%}
+<span class="icon icon--{{ name }}{% if size %} icon--{{ size }}{% endif %}" aria-hidden="true"></span>
+{%- endmacro -%}
+
+{#- A Clipboard row. .clip__source holds the FULL text and is the only thing COPY reads;
+    the preview is cut short and may be hidden. -#}
+{%- macro clip_row(clip) -%}
+{%- set name = clip.title or "Untitled" -%}
+<li class="clip">
+  <div class="clip__head">
+    <h2 class="clip__title"><a class="clip__title-link" href="/clipboard/{{ clip.id }}">{{ name }}</a></h2>
+    {% if clip.favorite %}<span class="pin-mark" aria-label="Favorite">{{ icon("star-filled", "sm") }}</span>{% endif %}
+    {% if clip.hidden %}<button class="icon-btn reveal" type="button" data-reveal data-name="{{ name }}" aria-pressed="false" aria-label="Show {{ name }}"><span class="icon" aria-hidden="true"></span></button>{% endif %}
+    <button class="icon-btn" type="button" data-sheet-open="sheet-clip" data-sheet-title="{{ name }}" data-item="/api/clips/{{ clip.id }}" data-edit="/clipboard/{{ clip.id }}"{% if clip.hidden %} data-clip-hidden{% endif %}{% if clip.favorite %} data-favorite{% endif %} aria-haspopup="dialog" aria-label="More actions for {{ name }}">{{ icon("ellipsis") }}</button>
+  </div>
+  {% if clip.hidden %}<p class="clip__masked"><span aria-hidden="true">••••••••</span><span class="visually-hidden">Content hidden</span></p>{% endif %}
+  <pre class="clip__content{% if clip.content.count('\n') >= 3 or clip.content | length > 120 %} clip__content--long{% endif %}"{% if clip.hidden %} hidden{% endif %}>{{ clip.content[:600] }}</pre>
+  <textarea class="clip__source" hidden readonly>
+{{ clip.content }}</textarea>
+  <button class="copy-btn" type="button" data-copy aria-label="Copy {{ name }}"><span class="copy-btn__label">COPY</span></button>
+</li>
+{%- endmacro -%}

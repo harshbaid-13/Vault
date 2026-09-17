@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/static/css/app.css">
 <script src="/static/js/app.js" defer></script>
 </head>
-<body class="app" data-app>
+<body class="app{% if no_tabbar %} app--no-tabbar{% endif %}" data-app>
 {%- macro nav_icon(name, size="") -%}
 <span class="icon icon--{{ name }}{% if size %} icon--{{ size }}{% endif %}" aria-hidden="true"></span>
 {%- endmacro -%}
@@ -47,6 +47,7 @@
 {% block content %}{% endblock %}
 </main>
 </div>
+{% if not no_tabbar %}
 <nav class="tabbar" aria-label="Main">
   {{ tab("home", "/", "Home", "house") }}
   {{ tab("files", "/files", "Files", "folder") }}
@@ -54,6 +55,7 @@
   {{ tab("clipboard", "/clipboard", "Clipboard", "clipboard") }}
   <button class="tabbar__tab{% if section in more_sections %} tabbar__tab--active{% endif %}" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog">{{ nav_icon("ellipsis") }}<span>More</span></button>
 </nav>
+{% endif %}
 <div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
 <dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
   <span class="sheet__handle" aria-hidden="true"></span>
@@ -67,6 +69,15 @@
     <li><form action="/logout" method="post"><button class="sheet__item" type="submit">{{ nav_icon("log-out", "sm") }}Log out</button></form></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+{% block dialogs %}{% endblock %}
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
 </dialog>
 </body>
 </html>
