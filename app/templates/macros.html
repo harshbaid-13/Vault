@@ -53,11 +53,31 @@
 </li>
 {%- endmacro -%}
 
+{#- The checkbox that select mode shows on a Files row (always shown on a desktop). -#}
+{%- macro select_box(kind, id, name) -%}
+<label class="row__select"><input type="checkbox" data-select="{{ kind }}" value="{{ id }}"><span class="visually-hidden">Select {{ name }}</span></label>
+{%- endmacro -%}
+
+{#- A Files folder row: opens the folder; ⋯ has Rename, Move, Delete. -#}
+{%- macro folder_row(folder) -%}
+<li class="row" data-name="{{ folder.name }}">
+  {{ select_box("folders", folder.id, folder.name) }}
+  <span class="icon icon--folder row__icon" aria-hidden="true"></span>
+  <div class="row__body">
+    <a class="row__title row__link" href="/files?folder={{ folder.id }}">{{ folder.name }}</a>
+    <span class="row__meta row__meta--data">{{ "Empty" if not folder["items"] else folder["items"] ~ (" item" if folder["items"] == 1 else " items") }}</span>
+  </div>
+  <button class="icon-btn row__action" type="button" data-sheet-open="sheet-folder" data-sheet-title="{{ folder.name }}" data-item="/api/folders/{{ folder.id }}" data-rename="{{ folder.name }}" aria-haspopup="dialog" aria-label="More actions for {{ folder.name }}">{{ icon("ellipsis") }}</button>
+</li>
+{%- endmacro -%}
+
 {#- A Files row. The name truncates in the middle so the extension stays visible. S8 points the
-    title at the preview page; until then it opens /view (inline when safe, else a download). -#}
-{%- macro file_row(file) -%}
+    title at the preview page; until then it opens /view (inline when safe, else a download).
+    `selectable` adds the select-mode checkbox (the Files page only). -#}
+{%- macro file_row(file, selectable=False) -%}
 {%- set cut = [file.name | length - 8, 0] | max -%}
-<li class="row">
+<li class="row" data-name="{{ file.name }}">
+  {% if selectable %}{{ select_box("files", file.id, file.name) }}{% endif %}
   <span class="icon icon--{{ {'image': 'image', 'video': 'video', 'pdf': 'file-text', 'text': 'file-text'}.get(file.kind, 'file') }} row__icon" aria-hidden="true"></span>
   <div class="row__body">
     <a class="row__title row__link" href="/api/files/{{ file.id }}/view"><span class="name"><span class="name__head">{{ file.name[:cut] }}</span><span class="name__tail">{{ file.name[cut:] }}</span></span></a>

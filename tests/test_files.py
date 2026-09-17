@@ -83,7 +83,7 @@ def test_many_files_one_request_each(auth_client, settings):
         upload(auth_client, name, name.encode())
     listed = auth_client.get("/api/files").json()
     assert listed["folders"] == []
-    assert [f["name"] for f in listed["files"]] == list(reversed(names))  # newest first
+    assert [f["name"] for f in listed["files"]] == names  # a folder starts sorted by name (S7)
     assert len(disk_files(settings)) == 5
 
 
@@ -320,7 +320,7 @@ def test_files_page(auth_client):
     file = upload(auth_client, "electricity-bill-aug.pdf", b"%PDF")
     auth_client.patch(f"/api/files/{file['id']}", json={"favorite": True})
     html = auth_client.get("/files").text
-    [row] = re.findall(r'<li class="row">.*?</li>', html, re.S)
+    [row] = re.findall(r'<li class="row" data-name="electricity-bill-aug.pdf">.*?</li>', html, re.S)
     assert '<span class="name__head">electricity-bill</span><span class="name__tail">-aug.pdf</span>' in row
     assert f'href="/api/files/{file["id"]}/view"' in row
     assert "4 B · Just now" in row

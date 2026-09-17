@@ -88,12 +88,30 @@
 
   // After a change, swap in a fresh copy of <main> from the same URL. The
   // server renders it, so no row HTML is ever built here.
+  // Ticked rows stay ticked across the swap.
   async function refreshMain() {
     const url = new URL(window.location.href);
     url.searchParams.set('partial', '1');
     const response = await fetch(url);
     if (!response.ok) throw new Error("Saved, but the list didn't refresh. Reload the page.");
+    const ticked = new Set($$('[data-select]:checked').map((box) => `${box.dataset.select}:${box.value}`));
     $('main').innerHTML = await response.text();
+    $$('[data-select]').forEach((box) => { box.checked = ticked.has(`${box.dataset.select}:${box.value}`); });
+    if (selecting) selectionChanged();
+  }
+
+  // The folder the Files page shows: a number, or null for the top level (and other pages).
+  function currentFolderId() {
+    const id = $('[data-folder-id]')?.dataset.folderId;
+    return id ? Number(id) : null;
+  }
+
+  // "3 folders and 42 files"
+  function countText(folders, files) {
+    const parts = [];
+    if (folders) parts.push(`${folders} folder${folders === 1 ? '' : 's'}`);
+    if (files) parts.push(`${files} file${files === 1 ? '' : 's'}`);
+    return parts.join(' and ');
   }
 
   function failed(error) {
@@ -252,11 +270,25 @@
     if (!inside) dialog.close();
   }
 
-  function confirmDelete(name) {
+  function confirmDelete(title, body = 'This cannot be undone.') {
     const modal = document.getElementById('modal-delete');
     if (!modal) return;
-    $('.modal__title', modal).textContent = `Delete ${name}?`;
+    $('.modal__title', modal).textContent = title;
+    $('.modal__body', modal).textContent = body;
     modal.showModal();
+  }
+
+  // A folder's confirm says exactly what goes with it.
+  async function confirmFolderDelete(trigger, name) {
+    try {
+      const inside = await api('GET', `${trigger.dataset.item}/summary`);
+      const what = countText(inside.folders, inside.files);
+      confirmDelete(`Delete ${name}?`, what
+        ? `The ${what} inside will be deleted too. This cannot be undone.`
+        : 'This cannot be undone.');
+    } catch (error) {
+      failed(error);
+    }
   }
 
   // A PATCH from a list row's sheet, then the list is re-rendered.
@@ -271,6 +303,7 @@
   }
 
   let deleteTrigger = null;
+  let deleteSelection = null;
 
   async function deleteItem(trigger) {
     try {
@@ -328,6 +361,18 @@
       case 'rename':
         if (trigger?.dataset.rename !== undefined) openRename(trigger);
         break;
+      case 'move':
+        if (url) openPicker(itemOf(url));
+        break;
+      case 'new-folder': {
+        const modal = document.getElementById('modal-folder');
+        modal?.showModal();
+        $('input', modal)?.focus();
+        break;
+      }
+      case 'select':
+        setSelecting(true);
+        break;
       case 'edit':
         if (trigger?.dataset.edit) window.location.href = trigger.dataset.edit;
         break;
@@ -345,12 +390,16 @@
       }
       case 'delete':
         deleteTrigger = trigger;
-        confirmDelete(name);
+        deleteSelection = null;
+        if (url?.startsWith('/api/folders/')) confirmFolderDelete(trigger, name);
+        else confirmDelete(`Delete ${name}?`);
         break;
       case 'confirm-delete':
-        if (deleteTrigger?.dataset.item) deleteItem(deleteTrigger);
+        if (deleteSelection) deleteSelected(deleteSelection);
+        else if (deleteTrigger?.dataset.item) deleteItem(deleteTrigger);
         else toast('Deleted'); // MOCKUP ONLY
         deleteTrigger = null;
+        deleteSelection = null;
         break;
       default:
         break;
@@ -511,8 +560,11 @@
     panel.hidden = false;
     clearTimeout(autoHideTimer);
     const list = $('[data-upload-list]', panel);
+    // Uploads go into the folder on screen when they were picked.
+    const folderId = currentFolderId();
     files.forEach((file) => {
       const row = uploadRow(file);
+      row.dataset.folderId = folderId === null ? '' : String(folderId);
       uploadFiles.set(row, file);
       list.append(row);
     });
@@ -548,7 +600,7 @@
       renderRow(row);
       done();
     };
-    xhr.open('POST', '/api/files');
+    xhr.open('POST', row.dataset.folderId ? `/api/files?folder_id=${row.dataset.folderId}` : '/api/files');
     xhr.setRequestHeader('Content-Type', 'application/octet-stream');
     xhr.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
     xhr.upload.addEventListener('progress', (event) => {
@@ -819,8 +871,8 @@
     $('[data-rename-error]', modal).textContent = '';
     modal.showModal();
     input.focus();
-    // Select the name but not the extension, like a file manager.
-    const dot = input.value.lastIndexOf('.');
+    // Select a file's name but not its extension, like a file manager. A folder has none.
+    const dot = trigger.dataset.item.startsWith('/api/folders/') ? -1 : input.value.lastIndexOf('.');
     input.setSelectionRange(0, dot > 0 ? dot : input.value.length);
   }
 
@@ -848,6 +900,242 @@
       }
     });
   }
+
+  function initFolderForm(form) {
+    const error = $('[data-folder-error]', form);
+    const submit = $('button[type="submit"]', form);
+    const dialog = form.closest('dialog');
+    dialog.addEventListener('close', () => {
+      form.reset();
+      error.textContent = '';
+    });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const name = form.elements.name.value;
+      if (!name.trim()) {
+        error.textContent = 'Enter a name.';
+        return;
+      }
+      submit.disabled = true;
+      try {
+        await api('POST', '/api/folders', { name, parent_id: currentFolderId() });
+        dialog.close();
+        await refreshMain();
+        toast('Folder created');
+      } catch (problem) {
+        if (problem.status === 401) failed(problem);
+        else error.textContent = problem.message;
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  }
+
+  /* ---- Files: select mode --------------------------------------------- */
+  /* Header ⋯ → Select on a phone; on a desktop the checkboxes are always there
+     and ticking one starts it. Unticking the last one ends it. */
+
+  let selecting = false;
+  let lastTicked = null;
+
+  function selection() {
+    const boxes = $$('[data-select]:checked');
+    return {
+      files: boxes.filter((box) => box.dataset.select === 'files').map((box) => box.value),
+      folders: boxes.filter((box) => box.dataset.select === 'folders').map((box) => Number(box.value)),
+    };
+  }
+
+  function setSelecting(on) {
+    const head = $('[data-select-head]');
+    if (!head) return;
+    selecting = on;
+    document.body.classList.toggle('is-selecting', on);
+    head.hidden = !on;
+    $('[data-select-bar]').hidden = !on;
+    if (!on) {
+      $$('[data-select]').forEach((box) => { box.checked = false; });
+      lastTicked = null;
+    }
+    selectionChanged();
+  }
+
+  function selectionChanged() {
+    const boxes = $$('[data-select]');
+    const count = boxes.filter((box) => box.checked).length;
+    if (count && !selecting) {
+      setSelecting(true);
+      return;
+    }
+    if (!selecting) return;
+    $('[data-select-count]').textContent = `${count} selected`;
+    $('[data-select-move]').disabled = !count;
+    $('[data-select-delete]').disabled = !count;
+    const visible = boxes.filter((box) => !box.closest('.row').hidden);
+    $('[data-select-all]').textContent = visible.length && visible.every((box) => box.checked) ? 'Select none' : 'Select all';
+  }
+
+  // Shift-click ticks (or unticks) every row between the last one and this one.
+  function tick(box, range) {
+    if (range && lastTicked?.isConnected) {
+      const boxes = $$('[data-select]').filter((other) => !other.closest('.row').hidden);
+      const [from, to] = [boxes.indexOf(lastTicked), boxes.indexOf(box)].sort((a, b) => a - b);
+      if (from >= 0) boxes.slice(from, to + 1).forEach((other) => { other.checked = box.checked; });
+    }
+    lastTicked = box;
+    selectionChanged();
+  }
+
+  function selectAll() {
+    const visible = $$('[data-select]').filter((box) => !box.closest('.row').hidden);
+    const on = !visible.every((box) => box.checked);
+    visible.forEach((box) => { box.checked = on; });
+    selectionChanged();
+  }
+
+  function deleteSelectedAsk() {
+    const items = selection();
+    const folderIds = items.folders;
+    if (!folderIds.length) {
+      deleteSelection = items;
+      confirmDelete(`Delete ${countText(0, items.files.length)}?`);
+      return;
+    }
+    // Count what is inside the folders too, so the confirm names everything that goes.
+    Promise.all(folderIds.map((id) => api('GET', `/api/folders/${id}/summary`)))
+      .then((inside) => {
+        const folders = folderIds.length + inside.reduce((sum, one) => sum + one.folders, 0);
+        const files = items.files.length + inside.reduce((sum, one) => sum + one.files, 0);
+        deleteSelection = items;
+        deleteTrigger = null;
+        confirmDelete(`Delete ${countText(folders, files)}?`);
+      })
+      .catch(failed);
+  }
+
+  async function deleteSelected(items) {
+    try {
+      await api('POST', '/api/delete', items);
+      setSelecting(false);
+      await refreshMain();
+      toast('Deleted');
+    } catch (error) {
+      failed(error);
+    }
+  }
+
+  // In select mode a tap on a row ticks it instead of opening it.
+  document.addEventListener('click', (event) => {
+    const box = event.target.closest?.('[data-select]');
+    if (box) {
+      tick(box, event.shiftKey);
+      return;
+    }
+    if (!selecting) return;
+    const link = event.target.closest?.('.row__link');
+    const rowBox = link && $('[data-select]', link.closest('.row'));
+    if (!rowBox) return;
+    event.preventDefault();
+    rowBox.checked = !rowBox.checked;
+    tick(rowBox, event.shiftKey);
+  });
+
+  /* ---- Files: move picker --------------------------------------------- */
+  /* Opens in the folder being shown. The folders being moved aren't listed, so
+     nothing can be moved into itself (the server checks too). */
+
+  const picker = { tree: [], at: null, from: null, items: null };
+
+  // "/api/files/<id>" → {files: [id], folders: []}
+  function itemOf(url) {
+    const [, kind, id] = url.match(/^\/api\/(files|folders)\/(.+)$/);
+    return kind === 'files' ? { files: [id], folders: [] } : { files: [], folders: [Number(id)] };
+  }
+
+  async function openPicker(items) {
+    const dialog = document.getElementById('sheet-move');
+    if (!dialog) return;
+    try {
+      picker.tree = (await api('GET', '/api/folders')).folders;
+    } catch (error) {
+      failed(error);
+      return;
+    }
+    Object.assign(picker, { items, from: currentFolderId(), at: currentFolderId() });
+    $('[data-picker-what]', dialog).textContent = `Move ${countText(items.folders.length, items.files.length)} to…`;
+    renderPicker();
+    dialog.showModal();
+  }
+
+  function renderPicker() {
+    const dialog = document.getElementById('sheet-move');
+    const here = picker.tree.find((folder) => folder.id === picker.at);
+    if (!here) picker.at = null;
+    const moving = new Set(picker.items.folders);
+    const inside = picker.tree.filter((folder) => folder.parent_id === picker.at && !moving.has(folder.id));
+    $('[data-picker-title]', dialog).textContent = here ? here.name : 'Files';
+    $('[data-picker-up]', dialog).disabled = picker.at === null;
+    $('[data-picker-list]', dialog).replaceChildren(...inside.map((folder) => {
+      const button = el('button', 'sheet__item');
+      button.type = 'button';
+      button.dataset.pickerOpen = String(folder.id);
+      button.append(icon('folder', 'icon--sm'), el('span', 'picker__name', folder.name), icon('chevron-right', 'icon--sm picker__chevron'));
+      const item = el('li');
+      item.append(button);
+      return item;
+    }));
+    $('[data-picker-empty]', dialog).hidden = inside.length > 0;
+    // Everything being moved sits in the folder this page shows.
+    $('[data-picker-confirm]', dialog).disabled = picker.at === picker.from;
+  }
+
+  function pickerGo(folderId) {
+    picker.at = folderId;
+    renderPicker();
+    $('[data-picker-up]').focus();
+  }
+
+  async function moveHere(button) {
+    const dialog = button.closest('dialog');
+    const { items, at } = picker;
+    const destination = picker.tree.find((folder) => folder.id === at)?.name || 'Files';
+    button.disabled = true;
+    try {
+      await api('POST', '/api/move', { ...items, to: at });
+      dialog.close();
+      setSelecting(false);
+      await refreshMain();
+      const count = items.files.length + items.folders.length;
+      toast(count === 1 ? `Moved to ${destination}` : `Moved ${countText(items.folders.length, items.files.length)} to ${destination}`);
+    } catch (error) {
+      // A toast can't show above an open dialog.
+      dialog.close();
+      failed(error);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  /* ---- Files: filter box ---------------------------------------------- */
+
+  document.addEventListener('input', (event) => {
+    const input = event.target.closest?.('[data-filter]');
+    if (!input) return;
+    const term = input.value.trim().toLocaleLowerCase();
+    let shown = 0;
+    $$('[data-select-list] > [data-name]').forEach((row) => {
+      const match = !term || row.dataset.name.toLocaleLowerCase().includes(term);
+      row.hidden = !match;
+      if (match) shown += 1;
+    });
+    const empty = $('[data-filter-empty]');
+    if (empty) empty.hidden = shown > 0;
+    if (selecting) selectionChanged();
+  });
+
+  document.addEventListener('submit', (event) => {
+    if (event.target.matches('[data-filter-form]')) event.preventDefault();
+  });
 
   /* ---- Link form ----------------------------------------------------- */
 
@@ -1028,7 +1316,8 @@
     '[data-action]', '[data-copy]', '[data-copy-from]', '[data-reveal]', '[data-star]',
     '[data-sheet-open]', '[data-modal-open]', '[data-close]', '[data-toast]', '[data-upload]',
     '[data-upload-cancel]', '[data-upload-retry]', '[data-upload-toggle]',
-    '[data-upload-dismiss]', '[data-search-clear]', '.chip',
+    '[data-upload-dismiss]', '[data-search-clear]', '.chip', '[data-select-cancel]', '[data-select-all]',
+    '[data-select-move]', '[data-select-delete]', '[data-picker-open]', '[data-picker-up]', '[data-picker-confirm]',
   ].join(',');
 
   document.addEventListener('click', (event) => {
@@ -1072,6 +1361,17 @@
       input.value = '';
       input.focus();
     } else if (target.classList.contains('chip')) pressChip(target);
+    else if ('selectCancel' in data) setSelecting(false);
+    else if ('selectAll' in data) selectAll();
+    else if ('selectMove' in data) openPicker(selection());
+    else if ('selectDelete' in data) deleteSelectedAsk();
+    else if ('pickerOpen' in data) pickerGo(Number(data.pickerOpen));
+    else if ('pickerUp' in data) pickerGo(picker.tree.find((folder) => folder.id === picker.at)?.parent_id ?? null);
+    else if ('pickerConfirm' in data) moveHere(target);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && selecting && !$('dialog[open]')) setSelecting(false);
   });
 
   /* "/" focuses search on desktop. */
@@ -1090,6 +1390,7 @@
   $$('[data-editor]').forEach(initEditor);
   $$('[data-link-form]').forEach(initLinkForm);
   $$('[data-rename-form]').forEach(initRenameForm);
+  $$('[data-folder-form]').forEach(initFolderForm);
   $$('[data-retry-after]').forEach(initRetryCountdown);
   $$('[data-password-form]').forEach(initPasswordForm);
   if ($('[data-check]')) runConnectionChecks();

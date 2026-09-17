@@ -11,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import Response
 
-from app import auth, clips, db, files, home, links, notes
+from app import auth, clips, db, files, folders, home, links, notes
 from app.config import Settings
 from app.security import (
     AuthGateMiddleware,
@@ -79,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(notes.router)
     app.include_router(links.router)
     app.include_router(files.router)
+    app.include_router(folders.router)
 
     for path, (section, title, icon, stage) in PLACEHOLDERS.items():
         app.add_api_route(path, placeholder(section, title, icon, stage), methods=["GET"], response_class=HTMLResponse)

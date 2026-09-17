@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S6 (Files) — done; S7 (Folders) is next
-**Last updated:** 2026-09-17, after S6
+**Current stage:** S7 (Folders) — done; S8 (Previews, thumbnails, Photos) is next
+**Last updated:** 2026-09-17, after S7
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -43,7 +43,7 @@ runs at the end of every one.
 - [x] S5 — Notes (editor, autosave on hide/leave, discard empty) and Links (URL rules, form)
 - [x] S6 — Files: raw-body streaming upload (2 parallel), panel, download/view allowlist,
       Range 206, rename, favorite, delete, `?partial=1` refresh
-- [ ] S7 — Folders: tree, breadcrumb, create/rename/delete with counts, move picker, select
+- [x] S7 — Folders: tree, breadcrumb, create/rename/delete with counts, move picker, select
       mode (Move/Delete), per-folder sort
 - [ ] S8 — Thumbnails (EXIF, bomb limit, HEIC-safe), preview page per kind (PDF iframe on
       desktop, Open/Download on phone), Photos grid by month, viewer with neighbours
@@ -200,11 +200,42 @@ runs at the end of every one.
   **Your check (2026-09-17):** "working great". You didn't say whether the 2 GB upload over
   `tailscale serve` was part of it, so that stays under Known issues until confirmed.
 
+- **S7** — Folders. `app/folders.py` (split from `files.py` as TECH_PLAN §1 allows): folder SQL
+  (recursive CTEs for the breadcrumb, subtree, summary), `/api/folders` GET/POST/PATCH (rename,
+  move; into itself or a sub-folder → 422; same name in the same parent, any case → 409),
+  `/api/folders/{id}/summary`, `DELETE /api/folders/{id}` (rows in one transaction, then the bytes
+  of every file inside), `POST /api/move` (all or nothing) and `POST /api/delete`. `files.py`:
+  `/files?folder=<id>&sort=<s>` (bad or missing folder → 404 page), folders first then files,
+  sort saved on the folder (top level in `settings.files_sort`), `/api/files?folder_id=&sort=`,
+  uploads into `?folder_id=` (checked before the bytes arrive; folder deleted mid-upload → 404 and
+  the bytes removed), `PATCH /api/files/{id}` takes `folder_id`. Page: back button + breadcrumb
+  (`<h1>` is the folder name), sort sheet (Name, Date added, Size, Type; tapping the current one
+  flips it), count line, a "Filter this folder" box, folder rows (item count, ⋯ Rename / Move /
+  Delete), Move added to the file ⋯. Header ⋯: New folder, Select. Select mode: checkboxes (always
+  shown at 900px+, where ticking one starts it; Shift-click ticks a range), tapping a row ticks it,
+  top bar "N selected · Select all", bottom bar Move / Delete. Move picker: a sheet that starts in
+  this folder, walks the tree, hides the folders being moved, "Move here". Delete confirms name
+  what goes: "Delete Tax? The 3 folders and 42 files inside will be deleted too." / "Delete 1
+  folder and 2 files?". 338 tests pass (58 new, `tests/test_folders.py`). Headless Firefox against
+  a local run: at 500px created Documents → Bills → 2026 from the UI, uploaded 6 files into 2026,
+  back button → Bills, browser Back → 2026, Select → ticked 5 → Move → up to Bills → Move here
+  ("Moved 5 files to Bills"), filter, Largest first, deleted 2026 with its file, renamed a folder
+  (whole name selected), duplicate name error in the form, no horizontal scroll; at 1280px ticked
+  one checkbox, Shift-clicked a range of 4, moved them with the picker, bulk-deleted a folder + a
+  file. Logs show ids and counts only. Docker image **not** rebuilt (your vault container is running).
+
 ## Next
-S7 — Folders, move, sort, from `docs/PLAYBOOK.md` (adjusted by TECH_PLAN §9: sort saved per
-folder, select mode bar is Move / Delete).
+S8 — Previews, thumbnails, Photos, from `docs/PLAYBOOK.md` (adjusted by TECH_PLAN §9: PDF iframe
+on desktop, Open/Download on phone, no page-1 render; videos in the grid with a play badge).
 
 ## Known issues
+- **`static/js/app.js` is 1,400 lines**, past TECH_PLAN §9's "one JS file until ~1,000 lines".
+  Not split in S7 (not asked). Splitting per feature is a no-build change for S11 if you want it.
+- **Checked-then-filtered rows stay selected.** Typing in the filter hides rows but keeps their
+  ticks, so Move/Delete act on hidden rows too (the count says how many). Select all only ticks
+  what is shown.
+- **The move picker lists every folder from one request** (`/api/folders`). Fine for hundreds of
+  folders; revisit only if the tree gets huge.
 - **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
   inside the container is ignored by Linux, and `docker kill` counts as a manual stop.
 - **Pages answer GET only, not HEAD** (FastAPI routes). `curl -I` shows 405. Harmless; revisit
@@ -386,4 +417,19 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S6** — No Upload button in the Files header: the sidebar (desktop) and the tab bar (phone)
   already have one on every page.
 - **S6** — A dropped folder is skipped; only files upload.
+- **S7** — A folder starts sorted by **Name A–Z** (the schema default), so the top level no longer
+  lists newest first as S6 did. Date added → newest first on the first tap, Size → largest first.
+- **S7** — Folders have no size or type: under those sorts they stay in name order; under Date
+  added they sort by when they were made. Folders always come before files.
+- **S7** — The brief's filter box is built ("Filter this folder", narrows the rows on screen, no
+  request). DESIGN has no such box; the brief asked for it and nothing in TECH_PLAN dropped it.
+- **S7** — Folder names are cleaned like filenames, so `Bills/2026` becomes `2026` (the last part).
+  An empty name → "Enter a name."
+- **S7** — Checkboxes are always shown at 900px and up (DESIGN §4 flow: click, Shift-click, Move),
+  not only on hover devices: one breakpoint, as the rest of the CSS.
+- **S7** — Unticking the last row ends select mode, as on Android. Escape or ✕ also ends it.
+- **S7** — Moving doesn't change `updated_at` (like starring); renaming a folder does.
+- **S7** — Bulk delete skips ids that are already gone; bulk move refuses the whole move if any
+  item or the destination is gone (404) or a folder name clashes there (409).
+- **S7** — Drag-to-move on desktop not built (optional in the brief) → `docs/BACKLOG.md`.
 

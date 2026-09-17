@@ -1118,6 +1118,213 @@ textarea.input {
   .breadcrumb__current { font-size: var(--fs-xl); padding: 0; }
 }
 
+/* A folder name deep in the trail doesn't push the rest off the screen. */
+.breadcrumb__link {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==== Files: folders, filter, select mode, move picker ================= */
+
+.filter {
+  padding: 0 var(--space-4) var(--space-2);
+}
+
+.filter .search-field__icon {
+  left: calc(var(--space-4) + var(--space-3));
+}
+
+.filter__empty {
+  padding: var(--space-6) var(--space-4);
+  color: var(--c-text-muted);
+  text-align: center;
+}
+
+/* The checkbox sits where the row's left gutter is, above the stretched link. */
+.row__select {
+  position: relative;
+  z-index: 1;
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin: 0 calc(-1 * var(--space-3)) 0 calc(-1 * var(--space-3));
+}
+
+.row__select input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--c-accent);
+}
+
+.is-selecting .row__select {
+  display: flex;
+}
+
+.is-selecting .row__action {
+  visibility: hidden;
+}
+
+.row:has(.row__select input:checked) {
+  background: var(--c-accent-subtle);
+}
+
+/* Replaces the top bar while selecting. */
+.select-head {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: var(--z-tabbar);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: calc(56px + var(--safe-top));
+  padding: var(--safe-top) var(--space-2) 0;
+  background: var(--c-accent-subtle);
+  border-bottom: var(--border-hairline);
+}
+
+.select-head__count {
+  flex: 1;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+}
+
+/* Replaces the tab bar while selecting. */
+.select-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-tabbar);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: calc(var(--tabbar-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--c-surface);
+  border-top: var(--border-hairline);
+}
+
+.is-selecting .tabbar {
+  display: none;
+}
+
+.select-bar__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+}
+
+.select-bar__btn:active:not(:disabled) {
+  background: var(--c-surface-sunken);
+}
+
+.select-bar__btn:disabled {
+  color: var(--c-text-muted);
+}
+
+.select-bar__btn--danger:not(:disabled) {
+  color: var(--c-danger);
+}
+
+.sheet__note {
+  margin-left: auto;
+  color: var(--c-text-muted);
+  font-size: var(--fs-sm);
+}
+
+.picker__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-4) var(--space-2) var(--space-1);
+}
+
+.picker__title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker__chevron {
+  color: var(--c-text-muted);
+}
+
+.picker__empty {
+  padding: var(--space-4);
+  border-top: var(--border-hairline);
+  color: var(--c-text-muted);
+  font-size: var(--fs-sm);
+}
+
+/* Two classes: the sheet's own bottom padding comes later in this file. */
+.sheet.picker {
+  padding-bottom: 0;
+}
+
+/* The buttons stay in reach however long the folder list is. */
+.picker__actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--safe-bottom));
+  border-top: var(--border-hairline);
+  background: var(--c-surface-raised);
+}
+
+.picker__actions .btn {
+  flex: 1;
+}
+
+@media (min-width: 900px) {
+  .select-head,
+  .select-bar {
+    left: var(--sidebar-width);
+  }
+
+  .select-head {
+    padding-inline: var(--space-4);
+  }
+
+  .is-selecting .page {
+    padding-bottom: calc(var(--tabbar-height) + var(--space-12));
+  }
+
+  .select-bar {
+    grid-template-columns: repeat(2, 160px);
+    justify-content: center;
+  }
+
+  .row__select {
+    display: flex;
+  }
+}
+
 /* ==== Photos grid ====================================================== */
 
 .photo-grid {

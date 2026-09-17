@@ -1,33 +1,127 @@
 {% extends layout %}
-{% from "macros.html" import file_row, icon with context %}
-{% block content %}
-{% if files %}
-<div class="toolbar"><span class="toolbar__count">{{ files | length }} file{{ "" if files | length == 1 else "s" }} · {{ files | sum(attribute="size") | size }}</span></div>
-<h2 class="visually-hidden">Files</h2>
-<ul class="list" data-refresh-after-upload>
-{% for file in files %}
-{{ file_row(file) }}
-{% endfor %}
-</ul>
+{% from "macros.html" import file_row, folder_row, icon with context %}
+{% block heading %}
+{% if folder %}
+{%- set parent = crumbs[-2] if crumbs | length > 1 else none -%}
+<a class="icon-btn topbar__back" href="{{ '/files?folder=' ~ parent.id if parent else '/files' }}" aria-label="Back to {{ parent.name if parent else 'Files' }}">{{ icon("chevron-left") }}</a>
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <a class="breadcrumb__link" href="/files">Files</a>
+  {% for crumb in crumbs[:-1] %}
+  {{ icon("chevron-right", "xs breadcrumb__sep") }}
+  <a class="breadcrumb__link" href="/files?folder={{ crumb.id }}">{{ crumb.name }}</a>
+  {% endfor %}
+  {{ icon("chevron-right", "xs breadcrumb__sep") }}
+  <h1 class="breadcrumb__current" aria-current="page">{{ folder.name }}</h1>
+</nav>
 {% else %}
-<div class="empty" data-refresh-after-upload>
-  {{ icon("folder", "lg") }}
-  <p>No files yet. Tap the upload button, or drop files here on a computer.</p>
-</div>
+<h1 class="topbar__title">Files</h1>
 {% endif %}
 {% endblock %}
+{% block actions %}<button class="icon-btn" type="button" data-sheet-open="sheet-files-menu" data-sheet-title="{{ title }}" aria-haspopup="dialog" aria-label="Folder actions">{{ icon("ellipsis") }}</button>{% endblock %}
+{% block content %}
+{%- set count = subfolders | length + files | length -%}
+<div class="folder-view" data-folder-id="{{ folder.id if folder else '' }}" data-folder-name="{{ title }}" data-refresh-after-upload>
+{% if count %}
+<div class="toolbar">
+  <button class="btn btn--ghost" type="button" data-sheet-open="sheet-sort" aria-haspopup="dialog">{{ sort_label }} {{ icon("chevron-down", "sm") }}</button>
+  <span class="toolbar__count">
+    {%- if subfolders %}{{ subfolders | length }} folder{{ "" if subfolders | length == 1 else "s" }}{% endif %}
+    {%- if subfolders and files %} · {% endif %}
+    {%- if files %}{{ files | length }} file{{ "" if files | length == 1 else "s" }} · {{ files | sum(attribute="size") | size }}{% endif -%}
+  </span>
+</div>
+<form class="search-field filter" role="search" data-filter-form>
+  {{ icon("search", "sm search-field__icon") }}
+  <input class="input search-field__input" type="search" data-filter placeholder="Filter this folder" aria-label="Filter this folder" autocomplete="off" autocapitalize="off" spellcheck="false">
+</form>
+<h2 class="visually-hidden">Contents of {{ title }}</h2>
+<ul class="list" data-select-list>
+{% for sub in subfolders %}
+{{ folder_row(sub) }}
+{% endfor %}
+{% for file in files %}
+{{ file_row(file, selectable=True) }}
+{% endfor %}
+</ul>
+<p class="filter__empty" data-filter-empty hidden>Nothing in this folder matches.</p>
+{% else %}
+<div class="empty">
+  {{ icon("folder", "lg") }}
+  <p>{{ "This folder is empty." if folder else "No files yet." }} Tap the upload button, or drop files here on a computer.</p>
+</div>
+{% endif %}
+</div>
+{% endblock %}
 {% block dialogs %}
+<dialog class="sheet" id="sheet-files-menu" aria-labelledby="sheet-files-menu-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-files-menu-title">{{ title }}</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="new-folder">{{ icon("folder-plus", "sm") }}New folder</button></li>
+    <li><button class="sheet__item" type="button" data-action="select">{{ icon("check", "sm") }}Select</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-sort" aria-labelledby="sheet-sort-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-sort-title">Sort by</p>
+  <ul class="sheet__list">
+    {% for option in sort_options %}
+    <li><a class="sheet__item" href="{{ option.href }}"{% if option.active %} aria-current="true"{% endif %}>{% if option.active %}{{ icon("check", "sm") }}{% else %}<span class="sheet__spacer" aria-hidden="true"></span>{% endif %}{{ option.label }}{% if option.active %}<span class="sheet__note">{{ option.direction }}</span>{% endif %}</a></li>
+    {% endfor %}
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
 <dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title">
   <span class="sheet__handle" aria-hidden="true"></span>
   <p class="sheet__title" id="sheet-file-title">File</p>
   <ul class="sheet__list">
     <li><button class="sheet__item" type="button" data-action="download">{{ icon("download", "sm") }}Download</button></li>
     <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="move">{{ icon("folder-input", "sm") }}Move</button></li>
     <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy name</button></li>
     <li><button class="sheet__item" type="button" data-action="favorite">{{ icon("star", "sm") }}Favorite</button></li>
     <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet" id="sheet-folder" aria-labelledby="sheet-folder-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-folder-title">Folder</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="move">{{ icon("folder-input", "sm") }}Move</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="sheet picker" id="sheet-move" aria-labelledby="picker-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" data-picker-what>Move</p>
+  <div class="picker__head">
+    <button class="icon-btn" type="button" data-picker-up aria-label="Up one folder">{{ icon("chevron-left") }}</button>
+    <h2 class="picker__title" id="picker-title" data-picker-title>Files</h2>
+  </div>
+  <ul class="sheet__list picker__list" data-picker-list></ul>
+  <p class="picker__empty" data-picker-empty hidden>No folders in here.</p>
+  <div class="picker__actions">
+    <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+    <button class="btn btn--primary" type="button" data-picker-confirm>Move here</button>
+  </div>
+</dialog>
+<dialog class="modal" id="modal-folder" aria-labelledby="modal-folder-title">
+  <form class="modal__form" data-folder-form novalidate>
+    <h2 class="modal__title" id="modal-folder-title">New folder</h2>
+    <div class="field">
+      <label class="visually-hidden" for="folder-name">Folder name</label>
+      <input class="input" id="folder-name" name="name" type="text" maxlength="255" placeholder="Folder name" autocomplete="off" required>
+    </div>
+    <p class="field__error" data-folder-error aria-live="polite"></p>
+    <div class="modal__actions">
+      <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+      <button class="btn btn--primary" type="submit">Create</button>
+    </div>
+  </form>
 </dialog>
 <dialog class="modal" id="modal-rename" aria-labelledby="modal-rename-title">
   <form class="modal__form" data-rename-form novalidate>
@@ -43,4 +137,13 @@
     </div>
   </form>
 </dialog>
+<div class="select-head" data-select-head hidden>
+  <button class="icon-btn" type="button" data-select-cancel aria-label="Stop selecting">{{ icon("x") }}</button>
+  <p class="select-head__count" data-select-count aria-live="polite">0 selected</p>
+  <button class="btn btn--ghost" type="button" data-select-all>Select all</button>
+</div>
+<div class="select-bar" data-select-bar hidden>
+  <button class="select-bar__btn" type="button" data-select-move>{{ icon("folder-input") }}<span>Move</span></button>
+  <button class="select-bar__btn select-bar__btn--danger" type="button" data-select-delete>{{ icon("trash") }}<span>Delete</span></button>
+</div>
 {% endblock %}

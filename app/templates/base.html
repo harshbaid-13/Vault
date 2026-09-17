@@ -36,7 +36,7 @@
 <div class="app__main">
 <header class="topbar">
   {% block topbar %}
-  <h1 class="topbar__title">{{ title }}</h1>
+  {% block heading %}<h1 class="topbar__title">{{ title }}</h1>{% endblock %}
   <form class="search-field topbar__search desktop-only" action="/search" role="search">
     <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
     <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
