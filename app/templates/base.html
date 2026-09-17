@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>{% if section != "home" %}{{ title }} · {% endif %}My Vault</title>
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="/static/js/app.js" defer></script>
+</head>
+<body class="app" data-app>
+{%- macro nav_icon(name, size="") -%}
+<span class="icon icon--{{ name }}{% if size %} icon--{{ size }}{% endif %}" aria-hidden="true"></span>
+{%- endmacro -%}
+{%- macro sidebar_link(key, href, label, icon) -%}
+<li><a class="sidebar__link{% if key == section %} sidebar__link--active{% endif %}" href="{{ href }}"{% if key == section %} aria-current="page"{% endif %}>{{ nav_icon(icon, "sm") }}{{ label }}</a></li>
+{%- endmacro -%}
+{%- macro tab(key, href, label, icon) -%}
+<a class="tabbar__tab{% if key == section %} tabbar__tab--active{% endif %}" href="{{ href }}"{% if key == section %} aria-current="page"{% endif %}>{{ nav_icon(icon) }}<span>{{ label }}</span></a>
+{%- endmacro %}
+<a class="skip-link" href="#main">Skip to content</a>
+<nav class="sidebar" aria-label="Sections">
+  <p class="sidebar__mark">My Vault</p>
+  <button class="btn btn--primary sidebar__upload" type="button" data-upload>{{ nav_icon("upload", "sm") }}Upload</button>
+  <ul class="sidebar__list">
+    {% for key, href, label, icon in sections %}
+    {{ sidebar_link(key, href, label, icon) }}
+    {% endfor %}
+  </ul>
+  <ul class="sidebar__list sidebar__foot">
+    {{ sidebar_link("settings", "/settings", "Settings", "settings") }}
+  </ul>
+</nav>
+<div class="app__main">
+<header class="topbar">
+  {% block topbar %}
+  <h1 class="topbar__title">{{ title }}</h1>
+  <form class="search-field topbar__search desktop-only" action="/search" role="search">
+    <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
+    <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
+  </form>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="/search" aria-label="Search">{{ nav_icon("search") }}</a>{% block actions %}{% endblock %}</div>
+  {% endblock %}
+</header>
+<main class="page" id="main">
+{% block content %}{% endblock %}
+</main>
+</div>
+<nav class="tabbar" aria-label="Main">
+  {{ tab("home", "/", "Home", "house") }}
+  {{ tab("files", "/files", "Files", "folder") }}
+  <div class="tabbar__slot"><button class="fab" type="button" data-upload aria-label="Upload files">{{ nav_icon("upload") }}</button></div>
+  {{ tab("clipboard", "/clipboard", "Clipboard", "clipboard") }}
+  <button class="tabbar__tab{% if section in more_sections %} tabbar__tab--active{% endif %}" type="button" data-sheet-open="sheet-more" aria-haspopup="dialog">{{ nav_icon("ellipsis") }}<span>More</span></button>
+</nav>
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-more" aria-labelledby="sheet-more-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-more-title">More</p>
+  <ul class="sheet__list">
+    <li><a class="sheet__item" href="/photos">{{ nav_icon("image", "sm") }}Photos</a></li>
+    <li><a class="sheet__item" href="/notes">{{ nav_icon("file-text", "sm") }}Notes</a></li>
+    <li><a class="sheet__item" href="/links">{{ nav_icon("link", "sm") }}Links</a></li>
+    <li><a class="sheet__item" href="/favorites">{{ nav_icon("star", "sm") }}Favorites</a></li>
+    <li><a class="sheet__item" href="/settings">{{ nav_icon("settings", "sm") }}Settings</a></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+</body>
+</html>

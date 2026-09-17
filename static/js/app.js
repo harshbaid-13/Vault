@@ -14,6 +14,9 @@
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const pointerFine = window.matchMedia('(hover: hover) and (pointer: fine)');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // The real app marks <body data-app>; the static mockups don't. MOCKUP ONLY fakes
+  // must never run inside the app.
+  const IS_APP = 'app' in document.body.dataset;
 
   const MAX_UPLOAD_BYTES = 2 * 1024 ** 3;
   const COPY_FALLBACK_MESSAGE =
@@ -529,7 +532,11 @@
     else if ('sheetOpen' in data) openSheet(target);
     else if ('close' in data) target.closest('dialog')?.close();
     else if ('toast' in data) toast(data.toast);
-    else if ('upload' in data) uploadInput.click();
+    else if ('upload' in data) {
+      // S6 replaces this with the real upload.
+      if (IS_APP) toast('Uploading is not built yet (stage S6).', { error: true });
+      else uploadInput.click();
+    }
     else if ('uploadCancel' in data) {
       target.closest('.upload-row').remove();
       updateUploadTitle();

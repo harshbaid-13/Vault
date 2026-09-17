@@ -1,0 +1,23 @@
+services:
+  vault:
+    build: .
+    image: personal-vault
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Fixed inside the container; the host folders are chosen by the volumes below.
+      VAULT_DATA_DIR: /data
+      VAULT_BACKUP_DIR: /backups
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      # Only this computer can reach it. Phones and laptops come in through `tailscale serve`.
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./data:/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

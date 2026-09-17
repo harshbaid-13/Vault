@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S1 (walking skeleton) — not started; D5 plan waiting for review
-**Last updated:** 2026-09-15, after D5
+**Current stage:** S1 (walking skeleton) — done, including the Docker checks
+**Last updated:** 2026-09-17, S1 Docker checks
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -30,11 +30,12 @@ do not remove it.
 ### Build
 Each stage: its playbook prompt, adjusted by `docs/TECH_PLAN.md` §9. Tests pass and the app
 runs at the end of every one.
-- [ ] S1 — Walking skeleton: config (refuses bad SESSION_SECRET), db + `001_initial.sql`,
+- [x] S1 — Walking skeleton: config (refuses bad SESSION_SECRET), db + `001_initial.sql`,
       base layout from the mockups, `/healthz`, security headers, 404/500, Dockerfile (uid
       1000, tzdata), compose (127.0.0.1, ./data, ./backups), `.env.example`, conftest
 - [ ] S2 — Login: `cli set-password`, Argon2id, session + session_version, auth allowlist,
       global lockout, Origin check, safe `next`, logout, Change password in Settings
+      (current password required first — TECH_PLAN §5 #23)
 - [ ] S3 — Phone access: `docs/TAILSCALE.md` (fetched install steps), `tailscale serve`,
       Secure cookie + allowed origin, Settings shows HTTPS ✓ / Clipboard ✓, 2 GB upload probe
 - [ ] S4 — Clipboard *(reference)*: list, full-screen editor + autosave, hidden, favorite,
@@ -48,8 +49,9 @@ runs at the end of every one.
       desktop, Open/Download on phone), Photos grid by month, viewer with neighbours
 - [ ] S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial +
       `/api/search`, LIKE escaping, hidden clips title-only
-- [ ] S10 — `app.backup` (backup API, integrity check, `.tar`, keep 3, space check),
-      `app.restore`, `backup.sh`, cron, README
+- [ ] S10 — `app.backup`: DB snapshot (backup API + integrity check) then copy-if-missing
+      into `backups/files-mirror` with hash checks, keep 30 snapshots, `--prune-mirror`,
+      `--verify`; `app.restore <snapshot>`; `backup.sh`, cron, host rsync to external drive, README
 - [ ] S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files,
       fresh-install run of the README
 
@@ -81,23 +83,57 @@ runs at the end of every one.
   panel; a gap splitting each clip's title from its text (clip rows 155 → 143px); a gear icon
   on Change password. `docs/DESIGN.md` updated to match. Phone check: "all working great".
 - **D5** — `docs/TECH_PLAN.md`: folder structure (one module per feature, SQL → pages → API),
-  STRICT SQLite schema, page + JSON route tables, `.env` settings, 22-item security
+  STRICT SQLite schema, page + JSON route tables, `.env` settings, 23-item security
   checklist mapped to code and tests, pytest fixtures, reliability rules, 21 gotchas, and a
   table of every place the plan departs from the playbook briefs (§9). Settles the three D3
   questions and the D4 "See all" question. No app code, no new dependencies.
 
+- **D5 review** — Three notes applied: Change password requires the current password
+  (TECH_PLAN §5 #23, test specified); backups became a files mirror + dated DB snapshots
+  (§8 gotcha 16, `files.sha256` added so backup/restore check contents); mockup drift listed
+  under Known issues.
+- **S1** — Walking skeleton. `app/`: `config.py` (all §4 settings, refuses a missing/short/
+  example SESSION_SECRET without echoing it), `db.py` (folders, empties `tmp/`, WAL, numbered
+  migrations in their own transactions), `001_initial.sql` (whole v1 schema), `security.py`
+  (headers middleware, pure ASGI), `web.py`, `main.py` (placeholder pages for every section,
+  `/healthz`, friendly 404/500 — JSON under `/api`), `__main__.py` (`python -m app`, exit 1
+  with one sentence on bad config, no access log). Templates reuse the mockup shell.
+  `Dockerfile` (3.12-slim, tzdata, uid 1000), `docker-compose.yml` (127.0.0.1:8000, ./data,
+  ./backups, healthcheck), `.env.example`, `.dockerignore`, pinned `requirements*.txt`,
+  README stub. `app.js`: the mockup's fake upload never runs inside the app (`body[data-app]`).
+  55 tests pass. Ran locally with Python 3.12 and checked at 375px in light and dark.
+  **Docker checks (2026-09-17, Docker 29.8.1, Compose v5.5.1):** image builds (251 MB), container
+  goes healthy, `/healthz` + pages + static + 404 answer with the security headers; listens on
+  127.0.0.1:8000 only; runs as uid 1000 and `./data` files are owned by the host user; tzdata
+  works (Asia/Kolkata); `./data` survives `down`/`up` and the migration isn't re-applied; a short
+  SESSION_SECRET exits 1 with the one-sentence message. `.env` created with a generated secret.
+
 ## Next
-Review `docs/TECH_PLAN.md` §8 and §9 (the departures from the playbook). Then run S1 from
-`docs/PLAYBOOK.md`.
+S2 — Login, from `docs/PLAYBOOK.md`. Commit S1 first.
 
 ## Known issues
+- **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
+  inside the container is ignored by Linux, and `docker kill` counts as a manual stop.
+- **Pages answer GET only, not HEAD** (FastAPI routes). `curl -I` shows 405. Harmless; revisit
+  only if something needs HEAD.
+- **Starlette warns that its test client wants `httpx2`** instead of `httpx`. Only a warning
+  with the pinned versions; decide when upgrading, since swapping is a dependency change.
 - **Not mocked, designed in the stage that builds them:** select mode, rename/move/new-link/
   change-password forms, swipe-down to dismiss a sheet, the login error/lockout state, the
   offline banner, loading skeletons.
-- **Mockups vs plan:** the D3 PDF mockup shows a page-1 image and a video tile shows a
-  duration; the real app shows neither (TECH_PLAN §9). The mockups are not updated.
+- **The mockups are out of date in these places. Build from `docs/TECH_PLAN.md` §9, not the
+  mockup** (the mockups are not being updated):
+  - `preview-pdf.html` shows a rendered page-1 image. **S8 must not build one**: desktop embeds
+    the PDF in an iframe; on a phone it's the details block with Download + Open PDF.
+  - `photos.html` video tile shows a duration (`0:42`). Real tile: play badge only.
+  - `home.html` has "See all" on Recent. Real Home: only on Favorites.
+  - `photo-viewer.html` ⋯ sheet has no **Copy link**. The real viewer has it.
+  - `note-edit.html` doubles as the clip editor. The real clip editor also has a Hidden switch.
+  - `upload-sheet.html` + the fake upload in `app.js`: one file at a time, panel looks like it
+    persists. Real: 2 in parallel, and leaving the page while uploading asks first.
+  - Select mode (not mocked): the bottom bar is Move / Delete, no Download.
 - **To verify, not assumed:** Starlette `FileResponse` Range support (S6), `tailscale serve`
-  passing a 2 GB body (S3/S6), zone files in `python:3.12-slim` (S1), Chrome rendering the
+  passing a 2 GB body (S3/S6), Chrome rendering the
   PDF iframe without a sandbox CSP (S8).
 
 ## Decisions log
@@ -163,6 +199,7 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **D5** — Every departure from the playbook briefs is in `docs/TECH_PLAN.md` §9 rather than
   repeated here. The big ones: `favorite` column (not `pinned`); one raw-body request per
   uploaded file (not multipart); global login lockout (all requests share the proxy's
-  address); upload panel does not survive leaving the page; `BACKUP_KEEP=3` and `.tar`;
+  address); upload panel does not survive leaving the page; backups are one files mirror + dated DB
+  snapshots (files never change after upload, so bytes are copied once — changed in review);
   PDF on phone = Open/Download, no page-1 render; hidden clip content stays in the page;
   "See all" on Recent removed; Change password also in Settings.

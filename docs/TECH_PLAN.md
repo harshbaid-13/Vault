@@ -36,6 +36,7 @@ personal-vault/
 ├── backup.sh                  `docker compose exec vault python -m app.backup` wrapper
 ├── app/
 │   ├── __init__.py
+│   ├── __main__.py            `python -m app [--host]`: load settings, print a clear message and exit 1 on bad config, run uvicorn
 │   ├── main.py                create_app(settings): middleware, routers, /static mount, error pages, /healthz
 │   ├── config.py              Settings dataclass read from env; refuses to start on a bad SESSION_SECRET
 │   ├── db.py                  connect (WAL, foreign keys), run migrations, now(), transaction helper
@@ -103,11 +104,6 @@ The column is **`favorite`**, not `pinned` (see §9) — the UI says Favorite ev
 ```sql
 -- 001_initial.sql
 
-CREATE TABLE schema_version (
-  version    INTEGER PRIMARY KEY,
-  applied_at TEXT NOT NULL
-) STRICT;
-
 -- Key/value. Keys used: password_hash, session_version, files_sort (root folder's sort).
 CREATE TABLE settings (
   key   TEXT PRIMARY KEY,
@@ -130,6 +126,7 @@ CREATE TABLE files (
   folder_id     INTEGER REFERENCES folders(id) ON DELETE CASCADE,  -- NULL = root
   name          TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 255),  -- display text only
   size          INTEGER NOT NULL CHECK (size >= 0),
+  sha256        TEXT NOT NULL CHECK (length(sha256) = 64),         -- hashed while streaming; backup and restore verify against it
   mime          TEXT NOT NULL,                                     -- from the extension, never the browser
   kind          TEXT NOT NULL CHECK (kind IN ('image','video','audio','pdf','text','other')),
   favorite      INTEGER NOT NULL DEFAULT 0 CHECK (favorite IN (0,1)),
@@ -187,7 +184,10 @@ Notes on the schema:
   returns a friendly 422 first; the CHECK only catches a bug.
 - **`clips.hidden` content is never matched by search** (DESIGN §3.12), so search queries
   use `CASE WHEN hidden THEN '' ELSE content END`.
-- **Migrations:** `db.migrate()` runs at startup: reads `MAX(version)`, applies each
+- **`sha256`** costs nothing extra at upload (the bytes pass through the hasher on their way
+  to disk) and lets backup and restore check file *contents*, not just sizes (§8 gotcha 16).
+- **Migrations:** `db.migrate()` runs at startup: creates `schema_version (version INTEGER
+  PRIMARY KEY, applied_at TEXT)` if missing, reads `MAX(version)`, applies each
   `NNN_*.sql` above it inside its own transaction, inserts the version row. Safe to run
   repeatedly. No down-migrations — restore from backup instead.
 
@@ -295,7 +295,7 @@ Read once in `config.py` into a frozen dataclass passed to `create_app()` — ne
 | `VAULT_COOKIE_SECURE` | `false` | `true` once S3 is done and the vault is only opened over `https://…ts.net`. |
 | `VAULT_ALLOWED_ORIGINS` | *(empty)* | Comma-separated extra origins for the Origin check, e.g. `https://office-vault.tail1234.ts.net`. The request's own host is always allowed. |
 | `SESSION_DAYS` | `30` | Session cookie lifetime. |
-| `BACKUP_KEEP` | `3` | Archives kept. Each archive is a full copy of every file — see §8 gotcha 16 for why not 14. |
+| `BACKUP_KEEP` | `30` | Database snapshots kept. Files live once in the shared mirror, so each snapshot costs only the size of `vault.db` (§8 gotcha 16). |
 | `VAULT_TIMEZONE` | `Asia/Kolkata` | Only for display ("Today, 09:15", month headings). Storage stays UTC. |
 | `UID` / `GID` | `1000` | Compose only: the container runs as this user so `./data` stays owned by you. |
 
@@ -330,6 +330,7 @@ plaintext file forever. `set-password` prompts for it and stores only the hash.
 | 20 | Safe deletion | row deleted in a transaction first, then disk file + thumbnail; missing disk file logs a warning with the id only | row and bytes gone |
 | 21 | Not reachable from the internet | compose publishes `127.0.0.1:8000:8000` only; HTTPS via `tailscale serve` (never Funnel) | manual check in S3 |
 | 22 | Pixel bombs | `thumbs.py` sets `Image.MAX_IMAGE_PIXELS = 80_000_000` and catches `DecompressionBombError` | a 20000×20000 PNG header → no thumb, no 500 |
+| 23 | Changing the password needs the current one | `auth.change_password`: verifies `current` against the stored hash **before** anything else; wrong or missing → 400/422 and the hash is untouched; a wrong `current` counts toward the login lockout (#5), so the form can't be used to guess; `new` ≥ 12 characters; success bumps `session_version` and re-issues this session only | `test_auth`: wrong current → 400 + old password still logs in; missing current → 422; locked out after 5 wrong; right current → 204, new password works, old password fails, another logged-in client → 302 |
 
 ---
 
@@ -389,7 +390,7 @@ def auth_client(app, client):            # password set, logged in
   Writes are short. Routes are plain `def` (FastAPI runs them in a thread pool), except the
   upload and file-serving routes, which are `async` so a 2 GB stream never holds a thread.
 - **Uploads:** stream `request.stream()` to `tmp/<uuid>.part` in 1 MB chunks, counting bytes;
-  over the limit or client disconnect → delete the part file, 413/400. On success: `fsync`,
+  feeding `hashlib.sha256` as it goes; over the limit or client disconnect → delete the part file, 413/400. On success: `fsync`,
   `os.replace` into `files/<id[:2]>/<id>` (same filesystem, atomic), then insert the row. If
   the insert fails, delete the moved file. `shutil.disk_usage` checked before starting:
   if free space < Content-Length + 512 MB → 507 "Vault disk full".
@@ -428,7 +429,7 @@ on an iPhone are kept (D1 decision) but marked.
    embed in Chrome and Firefox on the laptop.
 8. **Copying a live SQLite file can corrupt the backup.** `backup.py` uses
    `sqlite3.Connection.backup()` into a temp file, runs `PRAGMA integrity_check` on the copy,
-   then archives.
+   then renames it into `backups/db/`.
 9. **Multipart uploads would double every byte on disk.** FastAPI's `UploadFile` spools the
    whole multipart body to the *container's* `/tmp` before the route runs — a 2 GB upload
    writes 2 GB into the container layer, then we copy it again, and the size limit can only
@@ -460,12 +461,50 @@ on an iPhone are kept (D1 decision) but marked.
     because the slim image may lack zone files — S1 verifies.
 15. **`UNIQUE(parent_id, name)` doesn't work at the root**, because NULLs never collide.
     The expression index `IFNULL(parent_id, 0)` in §2 fixes it.
-16. **Backups multiply disk use.** Every archive is a full copy of every file. With 14 kept
-    (the S10 brief), a 50 GB vault needs 700 GB of backups on the same disk that a disk
-    failure would take anyway. Default `BACKUP_KEEP=3`; `backup.py` checks free space first
-    and refuses with a clear message; the README pushes the weekly copy to an external drive.
-    Archives are plain **`.tar`, not `.tar.gz`**: photos, videos, PDFs and zips are already
-    compressed, so gzip burns minutes of CPU to save ~1%.
+16. **Full archives multiply disk use.** A tar of every file per run means N restore points
+    cost N × the vault. But uploaded files never change after upload — rename, move and
+    favorite only touch the DB — so a file's bytes only ever need copying once. The backup is:
+
+    ```text
+    backups/
+    ├── files-mirror/<id[:2]>/<id>        every file ever backed up; a normal run never deletes
+    └── db/vault-2026-09-15_0200.db      one integrity-checked snapshot per run, newest BACKUP_KEEP kept
+    ```
+
+    **A run, in this order:** (1) snapshot the DB (gotcha 8). (2) Read file ids, sizes and
+    hashes **from the snapshot**, and copy each one missing from the mirror via `.part` +
+    `fsync` + rename, checking the hash as it copies. Snapshot *first* matters: every row in the
+    snapshot then has its bytes in the mirror, and anything uploaded mid-run is merely extra.
+    (3) Check every file the snapshot names is in the mirror with the right size; any gap →
+    non-zero exit, and the snapshot is kept but named `…-INCOMPLETE.db`. (4) Prune snapshots
+    beyond `BACKUP_KEEP`. Free space is checked against the bytes actually to be copied.
+
+    **Restore** (`python -m app.restore backups/db/<snapshot>.db`, app stopped): integrity-check
+    the snapshot, confirm every file it names exists in the mirror with matching size — refuse
+    before touching anything if not — then move current `data/` contents into
+    `data/before-restore-<timestamp>/` (a subfolder: `/data` is a mount point and can't be
+    renamed), copy the snapshot to `vault.db`, and copy **only the files that snapshot names**
+    from the mirror, verifying hashes. Deleted files don't come back as orphans. Thumbnails
+    regenerate.
+
+    **Deleted files linger** in the mirror as an accidental undo: restore an older snapshot and
+    they're back. The mirror only shrinks by hand: `python -m app.backup --prune-mirror`
+    removes mirror files that no kept snapshot names, and prints what it freed.
+
+    **Why not rsync:** the backup runs inside the container, and `python:3.12-slim` has no
+    rsync. Because files are immutable, "copy if missing" *is* rsync-without-`--delete` — about
+    30 lines of Python, no extra package in the image. rsync remains the right tool **on the
+    host** for the weekly copy of `backups/` to an external drive, where it copies only what's
+    new; the README gives that one command.
+
+    **Why this beats tar archives here, including for restore reliability:** each restore is a
+    DB file plus plain files checked against stored hashes, with no archive to unpack.
+    Its one weakness is that each file's bytes exist **once** in the mirror, so a damaged
+    mirror file affects every snapshot that names it. Independent tars would survive that, but
+    they sit on the same disk, which is the likelier thing to fail. Answer: `backup.py
+    --verify` re-hashes the whole mirror (run it monthly — it reads every byte), and the
+    external-drive copy is the real second copy. No gzip: photos, videos, PDFs and zips are
+    already compressed.
 17. **Access logs leak search terms and names.** `--no-access-log`; the app logs its own
     one-line events without content (§5 #16).
 18. **Docker must start on boot** or the vault is gone after a power cut:
@@ -511,7 +550,7 @@ a brief and the design disagree, the design wins unless noted.
 | DESIGN: "See all" on Recent | removed; "See all" stays on Favorites | there is no Recent page to go to (D4 open question). Finding an older file is search, or Files sorted by Date added |
 | S9: hidden clips match search, masked | hidden clips match by **title only** | DESIGN §3.12: hidden content never feeds search |
 | S9: `/api/search` JSON for the UI | UI uses `/search?partial=1`; `/api/search` exists for tests and the SPEC | one results template |
-| S10: BACKUP_KEEP 14, `.tar.gz` | 3, `.tar` | gotcha 16 |
+| S10: dated `.tar.gz` archives, keep 14 | one files mirror + a dated DB snapshot per run, keep 30 snapshots | gotcha 16 (changed in D5 review) |
 | DESIGN §3.13: upload panel survives navigation | stays on its page, warns before leaving | gotcha 13 |
 | SPEC: `INITIAL_PASSWORD` in `.env` | not supported | a plaintext password in a file (§4) |
 
