@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S8 (Previews, thumbnails, Photos) — done; S9 (Home, Favorites, search) is next
-**Last updated:** 2026-09-17, after S8
+**Current stage:** S9 (Home, Favorites, search) — done; S10 (Backup, restore, README) is next
+**Last updated:** 2026-09-18, after S9
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -47,7 +47,7 @@ runs at the end of every one.
       mode (Move/Delete), per-folder sort
 - [x] S8 — Thumbnails (EXIF, bomb limit, HEIC-safe), preview page per kind (PDF iframe on
       desktop, Open/Download on phone), Photos grid by month, viewer with neighbours
-- [ ] S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial +
+- [x] S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial +
       `/api/search`, LIKE escaping, hidden clips title-only
 - [ ] S10 — `app.backup`: DB snapshot (backup API + integrity check) then copy-if-missing
       into `backups/files-mirror` with hash checks, keep 30 snapshots, `--prune-mirror`,
@@ -256,9 +256,34 @@ runs at the end of every one.
   Not tried: a real video (no ffmpeg here to make one; Range/206 is tested since S6), Chrome.
   Docker image not rebuilt.
 
+  **Your check (2026-09-18):** "done cool".
+
+- **S9** — Home, Favorites, Search, in `app/home.py` (it combines the per-type queries; files and
+  folders gained `search_files` / `search_folders`). **Home** `/`: Favorites (six, clips first, then
+  newest-modified; "See all" / "See all N") and Recent (ten newest of any type: files and links by
+  when added, notes and clips by last edit; empty ones left out), a hint when nothing is starred, and
+  an empty state with Upload a file / New clip. **Favorites** `/favorites?type=`: grouped Files ·
+  Notes · Clips · Links with counts, type chips (links, so the choice survives refresh and Back).
+  **Search** `/search?q=&type=&in=`: the field is the page's header (Back goes to where you came
+  from), results grouped with counts, ≤ 20 per type, folders with files, note snippet around the
+  match, clips with COPY right in the results, hidden clips matched by title only and shown
+  ••••••••; live as you type (250 ms, from 2 characters, stale answers dropped, address kept in
+  step), Enter = the same page, ✕ clears. The search icon on Files/Photos/Notes/Clipboard/Links
+  opens it narrowed to that type (`?in=`), "All" widens. `/api/search?q=&type=` returns
+  `{folders, files, notes, clips, links}` with a hidden clip's content blanked. Mixed lists use one
+  `any_row` macro and a new `clip_compact` row (title opens the editor, COPY above it). Every ⋯
+  sheet now comes from `sheets.html` macros (Files, Notes, Links, Clipboard, preview, viewer
+  switched to them; `file_dialogs.html` and the S1 placeholder page are gone). Icons in note, link
+  and clip rows sit in the same 40px box as file rows so mixed lists line up. 408 tests pass (28 new:
+  `test_search.py`, Home/Favorites in `test_home.py`). Headless Firefox at 500px: Home shows the
+  hidden Wi-Fi clip, COPY → "Copied ✓" and Ctrl+V pasted `mango-rain-4471`; typing "bill" found the
+  Bills folder, the PDF and the note live, with the cursor kept; Notes chip; ✕; search opened from
+  Notes started on Notes; Favorites grouped, Unfavorite from ⋯ refreshed it. At 1280px "/" focused
+  the header field and Enter opened `/search?q=bill`. No horizontal scroll. Docker not rebuilt.
+
 ## Next
-S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial + `/api/search`,
-from `docs/PLAYBOOK.md` adjusted by TECH_PLAN §9.
+S10 — Backup, restore, README, from `docs/PLAYBOOK.md` adjusted by TECH_PLAN §8 gotcha 16 (files
+mirror + dated DB snapshots). Fetch the current Docker install steps for Ubuntu 26.04 first.
 
 ## Known issues
 - **Not checked in S8, please check on your devices:** a video playing and seeking on the phone,
@@ -484,4 +509,18 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S8** — Text over 1 MB, or not UTF-8 enough to read, shows the details only / replacement marks.
 - **S8** — File and folder rows got a 40px icon box so names line up with thumbnail rows.
 - **S8** — Select mode on Photos (DESIGN §3.5) not built: not in the brief → `docs/BACKLOG.md`.
+- **S9** — Home follows DESIGN §3.2 / TECH_PLAN §9, not the brief: Favorites 6 + Recent 10 (mixed),
+  no section tiles, no separate recent files / recent notes lists. "See all" only on Favorites.
+- **S9** — Home's Favorites put clips first (Home answers "what can I copy"), then newest-modified.
+- **S9** — Type chips are links (`?type=`), not in-page filters, on Favorites and Search. Types are
+  Files (incl. folders and photos), Notes, Clips, Links; no separate Photos chip.
+- **S9** — The Everywhere/this-section toggle is the chips: opened from a section, search starts
+  on that section's chip and "All" widens it.
+- **S9** — On Home, Favorites and Search the file and folder ⋯ have no Move (the picker needs the
+  item's folder); move from Files or the preview. Compact clip rows have no ⋯: the title opens the
+  editor, where ★ and delete are.
+- **S9** — No recent searches on the empty search page (DESIGN allows "or nothing at all").
+- **S9** — `/api/search` blanks a hidden clip's `content`; the page still carries the full text in
+  `.clip__source` for COPY, as every list does (TECH_PLAN §8 gotcha 2).
+- **S9** — Queries are cut at 200 characters.
 

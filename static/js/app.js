@@ -421,6 +421,7 @@
   /* ---- Filter chips --------------------------------------------------- */
 
   function pressChip(chip) {
+    if (chip.tagName === 'A') return; // a link chip (Favorites, Search) just navigates
     const group = chip.closest('.chips');
     $$('.chip', group).forEach((other) => other.setAttribute('aria-pressed', String(other === chip)));
     const listId = group.dataset.filter;
@@ -1139,6 +1140,47 @@
     }
   }
 
+  /* ---- Live search ----------------------------------------------------- */
+  /* Results refresh 250 ms after typing stops, from 2 characters. The address follows the
+     field, so Back, refresh and Enter all land on the same results. */
+
+  function initLiveSearch(form) {
+    const input = form.elements.q;
+    const type = form.elements.type;
+    let timer;
+    let latest = 0;
+
+    async function run() {
+      const q = input.value.trim();
+      if (q.length === 1) return;
+      const url = new URL('/search', window.location.origin);
+      if (q) url.searchParams.set('q', q);
+      url.searchParams.set('type', type.value);
+      history.replaceState(history.state, '', url);
+      url.searchParams.set('partial', '1');
+      const ticket = ++latest;
+      try {
+        const response = await fetch(url);
+        if (response.status === 401) {
+          failed({ status: 401 });
+          return;
+        }
+        if (!response.ok) throw new Error("Search didn't work. Try again.");
+        const html = await response.text();
+        if (ticket === latest) $('main').innerHTML = html; // an older, slower answer never wins
+      } catch (error) {
+        failed(error.message ? error : new Error(OFFLINE_MESSAGE));
+      }
+    }
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(run, 250);
+    });
+    // Put the cursor at the end of a query already there.
+    if (input.value) input.setSelectionRange(input.value.length, input.value.length);
+  }
+
   /* ---- Files: filter box ---------------------------------------------- */
 
   document.addEventListener('input', (event) => {
@@ -1508,6 +1550,7 @@
       const input = $('input', target.closest('.search-field'));
       input.value = '';
       input.focus();
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (target.classList.contains('chip')) pressChip(target);
     else if ('selectCancel' in data) setSelecting(false);
     else if ('selectAll' in data) selectAll();
@@ -1539,6 +1582,7 @@
   $$('[data-link-form]').forEach(initLinkForm);
   $$('[data-rename-form]').forEach(initRenameForm);
   $$('[data-folder-form]').forEach(initFolderForm);
+  $$('[data-live-search]').forEach(initLiveSearch);
   $$('[data-retry-after]').forEach(initRetryCountdown);
   $$('[data-password-form]').forEach(initPasswordForm);
   if ($('[data-check]')) runConnectionChecks();

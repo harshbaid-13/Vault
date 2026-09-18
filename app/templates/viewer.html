@@ -3,6 +3,7 @@
     and the address in step with the slide on screen, and reloads around the edge slides when
     there are more (`data-more-newer` / `data-more-older`). -#}
 {% from "macros.html" import icon with context %}
+{% from "sheets.html" import rename_modal with context %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -49,20 +50,7 @@
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
 </dialog>
-<dialog class="modal" id="modal-rename" aria-labelledby="modal-rename-title">
-  <form class="modal__form" data-rename-form novalidate>
-    <h2 class="modal__title" id="modal-rename-title">Rename</h2>
-    <div class="field">
-      <label class="visually-hidden" for="rename-name">New name</label>
-      <input class="input" id="rename-name" name="name" type="text" maxlength="255" autocomplete="off" autocapitalize="off" spellcheck="false" required>
-    </div>
-    <p class="field__error" data-rename-error aria-live="polite"></p>
-    <div class="modal__actions">
-      <button class="btn btn--secondary" type="button" data-close>Cancel</button>
-      <button class="btn btn--primary" type="submit">Rename</button>
-    </div>
-  </form>
-</dialog>
+{{ rename_modal() }}
 <dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
   <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
   <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>

@@ -2,6 +2,7 @@
     HTML, SVG, XML and JS are never inline (`inline` is false), so they get the details only. -#}
 {% extends layout %}
 {% from "macros.html" import icon with context %}
+{% from "sheets.html" import sheet, move_picker, rename_modal with context %}
 {%- set back = "/files?folder=" ~ parent.id if parent else "/files" -%}
 {%- set view = "/api/files/" ~ file.id ~ "/view" -%}
 {% block heading %}
@@ -42,16 +43,7 @@
 </div>
 {% endblock %}
 {% block dialogs %}
-<dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title">
-  <span class="sheet__handle" aria-hidden="true"></span>
-  <p class="sheet__title" id="sheet-file-title">File</p>
-  <ul class="sheet__list">
-    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
-    <li><button class="sheet__item" type="button" data-action="move">{{ icon("folder-input", "sm") }}Move</button></li>
-    <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy name</button></li>
-    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
-  </ul>
-  <button class="sheet__cancel" type="button" data-close>Cancel</button>
-</dialog>
-{% include "file_dialogs.html" %}
+{{ sheet("sheet-file", "File", [("rename", "pencil", "Rename"), ("move", "folder-input", "Move"), ("copy", "copy", "Copy name"), ("delete", "trash", "Delete")]) }}
+{{ move_picker() }}
+{{ rename_modal() }}
 {% endblock %}

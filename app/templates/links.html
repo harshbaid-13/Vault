@@ -1,5 +1,6 @@
 {% extends layout %}
 {% from "macros.html" import link_row, icon with context %}
+{% from "sheets.html" import link_sheet with context %}
 {% block actions %}<a class="btn btn--secondary" href="/links/new" aria-label="New link">{{ icon("plus", "sm") }}New</a>{% endblock %}
 {% block content %}
 {% if links %}
@@ -17,15 +18,5 @@
 {% endif %}
 {% endblock %}
 {% block dialogs %}
-<dialog class="sheet" id="sheet-link" aria-labelledby="sheet-link-title">
-  <span class="sheet__handle" aria-hidden="true"></span>
-  <p class="sheet__title" id="sheet-link-title">Link</p>
-  <ul class="sheet__list">
-    <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy URL</button></li>
-    <li><button class="sheet__item" type="button" data-action="edit">{{ icon("pencil", "sm") }}Edit</button></li>
-    <li><button class="sheet__item" type="button" data-action="favorite">{{ icon("star", "sm") }}Favorite</button></li>
-    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
-  </ul>
-  <button class="sheet__cancel" type="button" data-close>Cancel</button>
-</dialog>
+{{ link_sheet() }}
 {% endblock %}

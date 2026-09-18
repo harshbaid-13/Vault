@@ -5,7 +5,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import auth
-from app.main import PLACEHOLDERS
 from app.security import CONTENT_SECURITY_POLICY
 from tests.conftest import PASSWORD, log_in
 
@@ -44,7 +43,7 @@ def test_pages_are_never_cached_but_static_files_may_be(auth_client):
     assert "no-store" not in auth_client.get("/static/css/app.css").headers.get("cache-control", "")
 
 
-@pytest.mark.parametrize("path", list(PLACEHOLDERS) + ["/settings", "/clipboard", "/notes", "/links", "/links/new", "/files", "/nope"])
+@pytest.mark.parametrize("path", ["/", "/favorites", "/search", "/photos", "/settings", "/clipboard", "/notes", "/links", "/links/new", "/files", "/nope"])
 def test_no_inline_script_or_style(auth_client, path):
     assert_no_inline(auth_client.get(path).text)
 

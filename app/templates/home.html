@@ -1,0 +1,47 @@
+{#- Home (S9, DESIGN §3.2): Favorites (six, clips first) and Recent (ten, any type). -#}
+{% extends layout %}
+{% from "macros.html" import any_row, icon with context %}
+{% from "sheets.html" import file_sheet, folder_sheet, note_sheet, link_sheet, rename_modal with context %}
+{% block content %}
+<div data-refresh-after-upload>
+{% if favorites %}
+<section aria-labelledby="home-favorites">
+  <div class="section-head"><h2 class="section-head__title" id="home-favorites">Favorites</h2>{% if favorite_count > favorites | length %}<a class="section-head__link" href="/favorites">See all {{ favorite_count }}</a>{% else %}<a class="section-head__link" href="/favorites">See all</a>{% endif %}</div>
+  <ul class="list">
+  {% for kind, item in favorites %}
+  {{ any_row(kind, item) }}
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% if recent %}
+<section aria-labelledby="home-recent">
+  <div class="section-head"><h2 class="section-head__title" id="home-recent">Recent</h2></div>
+  <ul class="list">
+  {% for kind, item in recent %}
+  {{ any_row(kind, item) }}
+  {% endfor %}
+  </ul>
+</section>
+{% if not favorites %}
+<p class="hint">Tap ★ on anything you use often and it stays at the top of Home.</p>
+{% endif %}
+{% else %}
+<div class="empty">
+  {{ icon("house", "lg") }}
+  <p>Nothing here yet. Upload your first file, or save a text you copy often — a Wi-Fi password, an address, a UPI ID.</p>
+  <div class="empty__actions">
+    <button class="btn btn--primary" type="button" data-upload>{{ icon("upload", "sm") }}Upload a file</button>
+    <form action="/clipboard/new" method="post"><button class="btn btn--secondary" type="submit">{{ icon("clipboard", "sm") }}New clip</button></form>
+  </div>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+{% block dialogs %}
+{{ file_sheet(move=False) }}
+{{ folder_sheet(move=False) }}
+{{ note_sheet() }}
+{{ link_sheet() }}
+{{ rename_modal() }}
+{% endblock %}

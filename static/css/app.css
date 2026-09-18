@@ -1025,6 +1025,16 @@ textarea.input {
   padding: var(--space-2) var(--space-4);
 }
 
+/* The compact clip's title link covers the row (like .row__link); COPY sits above it. */
+.clip--compact > .copy-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.clip__compact-link {
+  color: inherit;
+}
+
 .clip__body {
   display: flex;
   flex: 1;
@@ -1072,11 +1082,17 @@ textarea.input {
   line-height: 1;
 }
 
-/* Selected is ink, not green — the accent stays rationed for COPY. */
+/* Selected is ink, not green — the accent stays rationed for COPY. Chips that are links
+   (Favorites, Search) mark the current one with aria-current. */
+.chip[aria-current="page"],
 .chip[aria-pressed="true"] {
   border-color: var(--c-text);
   background: var(--c-text);
   color: var(--c-bg);
+}
+
+a.chip {
+  text-decoration: none;
 }
 
 @media (hover: hover) {
@@ -1783,6 +1799,32 @@ textarea.input {
 
 .empty__icon {
   color: var(--c-text-muted);
+}
+
+.empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.empty__actions > form {
+  display: contents;
+}
+
+/* A quiet line under a list (Home without favorites). */
+.hint {
+  padding: var(--space-4);
+  color: var(--c-text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+/* The search page's field fills the header on every width. */
+.search-page__field {
+  flex: 1;
+  max-width: none;
+  margin-inline: 0;
 }
 
 /* ==== Login ============================================================ */

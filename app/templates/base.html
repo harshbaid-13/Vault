@@ -41,7 +41,7 @@
     <span class="icon icon--search icon--sm search-field__icon" aria-hidden="true"></span>
     <input class="input search-field__input" type="search" name="q" placeholder="Search everything" aria-label="Search everything" autocomplete="off">
   </form>
-  <div class="topbar__actions"><a class="icon-btn mobile-only" href="/search" aria-label="Search">{{ nav_icon("search") }}</a>{% block actions %}{% endblock %}</div>
+  <div class="topbar__actions"><a class="icon-btn mobile-only" href="/search{% if section in ('files', 'photos', 'notes', 'clipboard', 'links') %}?in={{ section }}{% endif %}" aria-label="Search">{{ nav_icon("search") }}</a>{% block actions %}{% endblock %}</div>
   {% endblock %}
 </header>
 <main class="page" id="main">

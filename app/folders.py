@@ -85,6 +85,18 @@ def list_children(conn, parent_id: int | None, sort: str) -> list[dict]:
     return [dict(row) for row in rows]
 
 
+def search_folders(conn, q: str, limit: int) -> list[dict]:
+    """Folders whose name contains `q` (LIKE, escaped), with `items` like list_children."""
+    rows = conn.execute(
+        f"SELECT {COLUMNS},"
+        " (SELECT COUNT(*) FROM folders c WHERE c.parent_id = folders.id)"
+        " + (SELECT COUNT(*) FROM files WHERE files.folder_id = folders.id) AS items"
+        " FROM folders WHERE name LIKE ? ESCAPE '\\' ORDER BY name COLLATE NOCASE, id LIMIT ?",
+        (db.like_pattern(q), limit),
+    )
+    return [dict(row) for row in rows]
+
+
 def ancestors(conn, folder_id: int) -> list[dict]:
     """[{id, name}] from the top level down to this folder, for the breadcrumb."""
     rows = conn.execute(

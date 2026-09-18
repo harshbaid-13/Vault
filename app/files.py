@@ -47,6 +47,16 @@ def list_files(conn, folder_id: int | None, sort: str) -> list[dict]:
     return [to_file(row) for row in rows]
 
 
+def search_files(conn, q: str, limit: int) -> list[dict]:
+    """Files whose name contains `q` (LIKE, escaped): favorites first, then newest."""
+    rows = conn.execute(
+        f"SELECT {COLUMNS} FROM files WHERE name LIKE ? ESCAPE '\\'"
+        " ORDER BY favorite DESC, created_at DESC, rowid DESC LIMIT ?",
+        (db.like_pattern(q), limit),
+    )
+    return [to_file(row) for row in rows]
+
+
 def get_file(conn, file_id: str) -> dict | None:
     row = conn.execute(f"SELECT {COLUMNS} FROM files WHERE id = ?", (file_id,)).fetchone()
     return to_file(row) if row else None

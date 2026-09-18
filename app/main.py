@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.datastructures import MutableHeaders
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -25,13 +25,6 @@ from app.web import ApiError, render
 log = logging.getLogger("vault")
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
-
-# S1 placeholder pages: path → (section, title, icon, stage that builds it).
-PLACEHOLDERS = {
-    "/": ("home", "My Vault", "house", "S9"),
-    "/favorites": ("favorites", "Favorites", "star", "S9"),
-    "/search": ("search", "Search", "search", "S9"),
-}
 
 ERROR_PAGES = {
     403: ("Blocked", "You can't do that here."),
@@ -81,9 +74,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(folders.router)
     app.include_router(photos.router)
 
-    for path, (section, title, icon, stage) in PLACEHOLDERS.items():
-        app.add_api_route(path, placeholder(section, title, icon, stage), methods=["GET"], response_class=HTMLResponse)
-
     @app.exception_handler(StarletteHTTPException)
     async def http_error(request: Request, exc: StarletteHTTPException) -> Response:
         title, message = ERROR_PAGES.get(exc.status_code, ("Something went wrong", "That request didn't work."))
@@ -116,11 +106,3 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     log.info("Vault ready: data in %s, schema version %d", settings.data_dir, version)
     return app
 
-
-def placeholder(section: str, title: str, icon: str, stage: str):
-    def page(request: Request) -> Response:
-        label = "Home" if section == "home" else title
-        return render(request, "placeholder.html", section=section, title=title, label=label, icon=icon, stage=stage)
-
-    page.__name__ = f"placeholder_{section}"
-    return page

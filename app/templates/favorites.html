@@ -1,0 +1,25 @@
+{#- Favorites (S9, DESIGN §3.11): everything starred, grouped by type; the chips show one type. -#}
+{% extends layout %}
+{% from "macros.html" import grouped_rows, type_chips, icon with context %}
+{% from "sheets.html" import file_sheet, folder_sheet, note_sheet, link_sheet, rename_modal with context %}
+{%- macro chip_href(key) -%}/favorites{% if key %}?type={{ key }}{% endif %}{%- endmacro -%}
+{% block content %}
+{% if total %}
+{{ type_chips(types, kind, chip_href) }}
+{% endif %}
+{% if groups %}
+{{ grouped_rows(groups) }}
+{% else %}
+<div class="empty">
+  {{ icon("star", "lg") }}
+  <p>{% if total %}No {{ types[kind] | lower }} in Favorites yet.{% else %}No favorites yet.{% endif %} Tap ★ on anything you use often.</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block dialogs %}
+{{ file_sheet(move=False) }}
+{{ folder_sheet(move=False) }}
+{{ note_sheet() }}
+{{ link_sheet() }}
+{{ rename_modal() }}
+{% endblock %}

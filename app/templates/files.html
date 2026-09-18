@@ -1,5 +1,6 @@
 {% extends layout %}
 {% from "macros.html" import file_row, folder_row, icon with context %}
+{% from "sheets.html" import file_sheet, folder_sheet, move_picker, rename_modal with context %}
 {% block heading %}
 {% if folder %}
 {%- set parent = crumbs[-2] if crumbs | length > 1 else none -%}
@@ -72,29 +73,8 @@
   </ul>
   <button class="sheet__cancel" type="button" data-close>Cancel</button>
 </dialog>
-<dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title">
-  <span class="sheet__handle" aria-hidden="true"></span>
-  <p class="sheet__title" id="sheet-file-title">File</p>
-  <ul class="sheet__list">
-    <li><button class="sheet__item" type="button" data-action="download">{{ icon("download", "sm") }}Download</button></li>
-    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
-    <li><button class="sheet__item" type="button" data-action="move">{{ icon("folder-input", "sm") }}Move</button></li>
-    <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy name</button></li>
-    <li><button class="sheet__item" type="button" data-action="favorite">{{ icon("star", "sm") }}Favorite</button></li>
-    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
-  </ul>
-  <button class="sheet__cancel" type="button" data-close>Cancel</button>
-</dialog>
-<dialog class="sheet" id="sheet-folder" aria-labelledby="sheet-folder-title">
-  <span class="sheet__handle" aria-hidden="true"></span>
-  <p class="sheet__title" id="sheet-folder-title">Folder</p>
-  <ul class="sheet__list">
-    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
-    <li><button class="sheet__item" type="button" data-action="move">{{ icon("folder-input", "sm") }}Move</button></li>
-    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
-  </ul>
-  <button class="sheet__cancel" type="button" data-close>Cancel</button>
-</dialog>
+{{ file_sheet() }}
+{{ folder_sheet() }}
 <dialog class="modal" id="modal-folder" aria-labelledby="modal-folder-title">
   <form class="modal__form" data-folder-form novalidate>
     <h2 class="modal__title" id="modal-folder-title">New folder</h2>
@@ -109,7 +89,8 @@
     </div>
   </form>
 </dialog>
-{% include "file_dialogs.html" %}
+{{ move_picker() }}
+{{ rename_modal() }}
 <div class="select-head" data-select-head hidden>
   <button class="icon-btn" type="button" data-select-cancel aria-label="Stop selecting">{{ icon("x") }}</button>
   <p class="select-head__count" data-select-count aria-live="polite">0 selected</p>

@@ -1,0 +1,42 @@
+{#- Search (S9, DESIGN §3.12). The field is the page's header; typing refreshes <main> from
+    ?partial=1 after a 250 ms pause (app.js), Enter submits the same address. -#}
+{% extends layout %}
+{% from "macros.html" import grouped_rows, type_chips, icon with context %}
+{% from "sheets.html" import file_sheet, folder_sheet, note_sheet, link_sheet, rename_modal with context %}
+{%- macro chip_href(key) -%}/search?q={{ q | urlencode }}&type={{ key or "all" }}{%- endmacro -%}
+{% block topbar %}
+<a class="icon-btn topbar__back" href="{{ back }}" aria-label="Back">{{ icon("chevron-left") }}</a>
+<form class="search-field topbar__search search-page__field" action="/search" role="search" data-live-search>
+  {{ icon("search", "sm search-field__icon") }}
+  <input class="input search-field__input" type="search" name="q" value="{{ q }}" placeholder="Search everything" aria-label="Search everything" autocomplete="off" enterkeyhint="search" maxlength="200"{% if not q %} autofocus{% endif %}>
+  <input type="hidden" name="type" value="{{ kind or 'all' }}">
+  <button class="icon-btn search-field__clear" type="button" data-search-clear aria-label="Clear search">{{ icon("x", "sm") }}</button>
+</form>
+{% endblock %}
+{% block content %}
+{% if q %}
+{{ type_chips(types, kind, chip_href) }}
+{% endif %}
+{% if groups %}
+<h1 class="visually-hidden">Results for “{{ q }}”</h1>
+{{ grouped_rows(groups) }}
+{% elif q %}
+<div class="empty">
+  {{ icon("search", "lg") }}
+  <p>Nothing matches “{{ q }}”{% if kind %} in {{ types[kind] | lower }}{% endif %}. Try part of a filename or a word from the text.</p>
+  {% if kind %}<a class="btn btn--secondary" href="{{ chip_href(none) }}">Search everything</a>{% endif %}
+</div>
+{% else %}
+<div class="empty">
+  {{ icon("search", "lg") }}
+  <p>Search file and folder names, notes, clips and links.{% if kind %} Showing {{ types[kind] | lower }} only.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}
+{% block dialogs %}
+{{ file_sheet(move=False) }}
+{{ folder_sheet(move=False) }}
+{{ note_sheet() }}
+{{ link_sheet() }}
+{{ rename_modal() }}
+{% endblock %}
