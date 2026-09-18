@@ -1,0 +1,75 @@
+{#- The full-screen photo viewer (S8). Its own page, not the app shell: no sidebar, no tab bar.
+    Slides are a scroll-snap strip, so swiping needs no JS; app.js keeps the header, the ⋯ sheet
+    and the address in step with the slide on screen, and reloads around the edge slides when
+    there are more (`data-more-newer` / `data-more-older`). -#}
+{% from "macros.html" import icon with context %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>{{ title }} · My Vault</title>
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="/static/js/app.js" defer></script>
+</head>
+<body class="viewer" data-app data-max-upload="{{ max_upload_bytes }}">
+<div class="viewer__bar viewer-chrome">
+  <a class="icon-btn icon-btn--on-dark" href="/photos" data-viewer-back aria-label="Back to Photos">{{ icon("chevron-left") }}</a>
+  <div class="viewer__actions">
+    <button class="icon-btn icon-btn--on-dark star" type="button" data-star data-viewer-star data-item="/api/files/{{ current.id }}" data-name="this photo" aria-pressed="{{ 'true' if current.favorite else 'false' }}" aria-label="{{ 'Unfavorite' if current.favorite else 'Favorite' }} this photo"><span class="icon" aria-hidden="true"></span></button>
+    <button class="icon-btn icon-btn--on-dark" type="button" data-sheet-open="sheet-photo" data-viewer-menu data-sheet-title="{{ current.name }}" data-item="/api/files/{{ current.id }}" data-download="/api/files/{{ current.id }}/download" data-rename="{{ current.name }}" aria-haspopup="dialog" aria-label="Photo actions">{{ icon("ellipsis") }}</button>
+  </div>
+</div>
+<main class="viewer__track" id="main" tabindex="0" aria-label="Photos, swipe for next"{% if more_newer %} data-more-newer{% endif %}{% if more_older %} data-more-older{% endif %}>
+{% for slide in slides %}
+  <figure class="viewer__slide" data-id="{{ slide.id }}" data-name="{{ slide.name }}"{% if slide.favorite %} data-favorite{% endif %}{% if slide.id == current.id %} data-current{% endif %}>
+    {% if slide.inline and slide.kind == "image" %}
+    <img class="viewer__img" src="/api/files/{{ slide.id }}/view" alt="{{ slide.name }}" loading="lazy" decoding="async">
+    {% elif slide.inline %}
+    <video class="viewer__media" src="/api/files/{{ slide.id }}/view" controls playsinline preload="none"></video>
+    {% else %}
+    <div class="viewer__video">{{ icon("image" if slide.kind == "image" else "video", "lg") }}<p>No preview for this type.</p><a class="btn btn--secondary" href="/api/files/{{ slide.id }}/download" download>Download</a></div>
+    {% endif %}
+    <figcaption class="viewer__caption viewer-chrome"><span data-caption-name>{{ slide.name }}</span> · {{ slide.created_at | when }}</figcaption>
+  </figure>
+{% endfor %}
+</main>
+<button class="icon-btn icon-btn--on-dark viewer__nav viewer__nav--prev viewer-chrome desktop-only" type="button" data-viewer-step="-1" aria-label="Previous photo">{{ icon("chevron-left") }}</button>
+<button class="icon-btn icon-btn--on-dark viewer__nav viewer__nav--next viewer-chrome desktop-only" type="button" data-viewer-step="1" aria-label="Next photo">{{ icon("chevron-right") }}</button>
+<div class="toast-region" aria-live="polite"><div class="toast"><span class="icon icon--check icon--sm toast__icon" aria-hidden="true"></span><span class="toast__text"></span></div></div>
+<dialog class="sheet" id="sheet-photo" aria-labelledby="sheet-photo-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-photo-title">Photo</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="download">{{ icon("download", "sm") }}Download</button></li>
+    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="copy-link">{{ icon("link", "sm") }}Copy link</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="modal" id="modal-rename" aria-labelledby="modal-rename-title">
+  <form class="modal__form" data-rename-form novalidate>
+    <h2 class="modal__title" id="modal-rename-title">Rename</h2>
+    <div class="field">
+      <label class="visually-hidden" for="rename-name">New name</label>
+      <input class="input" id="rename-name" name="name" type="text" maxlength="255" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+    </div>
+    <p class="field__error" data-rename-error aria-live="polite"></p>
+    <div class="modal__actions">
+      <button class="btn btn--secondary" type="button" data-close>Cancel</button>
+      <button class="btn btn--primary" type="submit">Rename</button>
+    </div>
+  </form>
+</dialog>
+<dialog class="modal" id="modal-delete" aria-labelledby="modal-delete-title" aria-describedby="modal-delete-body">
+  <h2 class="modal__title" id="modal-delete-title">Delete this item?</h2>
+  <p class="modal__body" id="modal-delete-body">This cannot be undone.</p>
+  <div class="modal__actions">
+    <button class="btn btn--secondary" type="button" data-close autofocus>Cancel</button>
+    <button class="btn btn--danger" type="button" data-action="confirm-delete">Delete</button>
+  </div>
+</dialog>
+</body>
+</html>

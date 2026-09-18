@@ -61,6 +61,10 @@ class Settings:
     def files_dir(self) -> Path:
         return self.data_dir / "files"
 
+    @property
+    def thumbs_dir(self) -> Path:
+        return self.data_dir / "thumbs"
+
     @classmethod
     def from_env(cls, environ: dict[str, str] | None = None) -> "Settings":
         env = os.environ if environ is None else environ

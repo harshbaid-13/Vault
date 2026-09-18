@@ -68,7 +68,16 @@ def ago(context, stamp: str) -> str:
     return f"{moment.strftime('%b')} {moment.day}, {moment.year}"
 
 
+@pass_context
+def month(context, stamp: str) -> str:
+    """A stored UTC stamp as its month in VAULT_TIMEZONE: "September 2026"."""
+    tz = ZoneInfo(context["request"].app.state.settings.timezone)
+    moment = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC).astimezone(tz)
+    return moment.strftime("%B %Y")
+
+
 templates.env.filters["size"] = size
+templates.env.filters["month"] = month
 templates.env.filters["ago"] = ago
 templates.env.filters["when"] = when
 

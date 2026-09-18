@@ -62,7 +62,7 @@
 {%- macro folder_row(folder) -%}
 <li class="row" data-name="{{ folder.name }}">
   {{ select_box("folders", folder.id, folder.name) }}
-  <span class="icon icon--folder row__icon" aria-hidden="true"></span>
+  <span class="row__media"><span class="icon icon--folder row__icon" aria-hidden="true"></span></span>
   <div class="row__body">
     <a class="row__title row__link" href="/files?folder={{ folder.id }}">{{ folder.name }}</a>
     <span class="row__meta row__meta--data">{{ "Empty" if not folder["items"] else folder["items"] ~ (" item" if folder["items"] == 1 else " items") }}</span>
@@ -71,19 +71,32 @@
 </li>
 {%- endmacro -%}
 
-{#- A Files row. The name truncates in the middle so the extension stays visible. S8 points the
-    title at the preview page; until then it opens /view (inline when safe, else a download).
-    `selectable` adds the select-mode checkbox (the Files page only). -#}
+{#- A Files row. The name truncates in the middle so the extension stays visible, and the title
+    opens the preview page. Icons sit in a 40px box so names line up; images get a thumbnail over it; when there is none (HEIC,
+    corrupt) app.js hides the <img> and the icon shows. `selectable` adds the select-mode
+    checkbox (the Files page only). -#}
 {%- macro file_row(file, selectable=False) -%}
 {%- set cut = [file.name | length - 8, 0] | max -%}
 <li class="row" data-name="{{ file.name }}">
   {% if selectable %}{{ select_box("files", file.id, file.name) }}{% endif %}
-  <span class="icon icon--{{ {'image': 'image', 'video': 'video', 'pdf': 'file-text', 'text': 'file-text'}.get(file.kind, 'file') }} row__icon" aria-hidden="true"></span>
+  <span class="row__media"><span class="icon icon--{{ {'image': 'image', 'video': 'video', 'pdf': 'file-text', 'text': 'file-text'}.get(file.kind, 'file') }} row__icon" aria-hidden="true"></span>
+    {%- if file.kind == "image" %}<img class="row__thumb" src="/api/files/{{ file.id }}/thumb" alt="" width="40" height="40" loading="lazy" data-thumb>{% endif %}</span>
   <div class="row__body">
-    <a class="row__title row__link" href="/api/files/{{ file.id }}/view"><span class="name"><span class="name__head">{{ file.name[:cut] }}</span><span class="name__tail">{{ file.name[cut:] }}</span></span></a>
+    <a class="row__title row__link" href="/files/{{ file.id }}"><span class="name"><span class="name__head">{{ file.name[:cut] }}</span><span class="name__tail">{{ file.name[cut:] }}</span></span></a>
     <span class="row__meta row__meta--data">{{ file.size | size }} · {{ file.created_at | ago }}</span>
   </div>
   {% if file.favorite %}<span class="pin-mark" aria-label="Favorite">{{ icon("star-filled", "sm") }}</span>{% endif %}
   <button class="icon-btn row__action" type="button" data-sheet-open="sheet-file" data-sheet-title="{{ file.name }}" data-item="/api/files/{{ file.id }}" data-download="/api/files/{{ file.id }}/download" data-rename="{{ file.name }}" data-copy="{{ file.name }}"{% if file.favorite %} data-favorite{% endif %} aria-haspopup="dialog" aria-label="More actions for {{ file.name }}">{{ icon("ellipsis") }}</button>
 </li>
+{%- endmacro -%}
+
+{#- A Photos tile: the thumbnail over an icon, or a video icon with a play badge. -#}
+{%- macro photo_tile(photo) -%}
+<a class="photo-tile" href="/photos/{{ photo.id }}" aria-label="{{ 'Video ' if photo.kind == 'video' }}{{ photo.name }}">
+  {% if photo.kind == "image" %}
+  {{ icon("image", "lg") }}<img class="photo-tile__img" src="/api/files/{{ photo.id }}/thumb" alt="" width="400" height="400" loading="lazy" data-thumb>
+  {% else %}
+  {{ icon("video", "lg") }}<span class="photo-tile__badge">{{ icon("play", "xs") }}</span>
+  {% endif %}
+</a>
 {%- endmacro -%}

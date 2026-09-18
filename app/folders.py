@@ -10,7 +10,7 @@ import sqlite3
 from fastapi import APIRouter, Body, Request
 from starlette.responses import Response
 
-from app import db, storage
+from app import db, storage, thumbs
 from app.web import ApiError
 
 log = logging.getLogger("vault.folders")
@@ -274,6 +274,7 @@ def parse_folder_param(value: str | None) -> int | None:
 def remove_files(settings, file_ids: list[str]) -> None:
     for file_id in file_ids:
         storage.remove(settings.files_dir, file_id)
+        thumbs.remove(settings.thumbs_dir, file_id)
 
 
 # ---- API -----------------------------------------------------------------------------

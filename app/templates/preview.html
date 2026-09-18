@@ -1,0 +1,57 @@
+{#- One file (S8): the preview its kind allows, its details, Download, and ★ / ⋯ in the header.
+    HTML, SVG, XML and JS are never inline (`inline` is false), so they get the details only. -#}
+{% extends layout %}
+{% from "macros.html" import icon with context %}
+{%- set back = "/files?folder=" ~ parent.id if parent else "/files" -%}
+{%- set view = "/api/files/" ~ file.id ~ "/view" -%}
+{% block heading %}
+<a class="icon-btn topbar__back" href="{{ back }}" aria-label="Back to {{ parent.name if parent else 'Files' }}">{{ icon("chevron-left") }}</a>
+<p class="topbar__title">{{ parent.name if parent else "Files" }}</p>
+{% endblock %}
+{% block actions %}<button class="icon-btn star" type="button" data-star data-item="/api/files/{{ file.id }}" data-name="this file" aria-pressed="{{ 'true' if file.favorite else 'false' }}" aria-label="{{ 'Unfavorite' if file.favorite else 'Favorite' }} this file"><span class="icon" aria-hidden="true"></span></button><button class="icon-btn" type="button" data-sheet-open="sheet-file" data-sheet-title="{{ file.name }}" data-item="/api/files/{{ file.id }}" data-rename="{{ file.name }}" data-copy="{{ file.name }}" data-after-delete="{{ back }}" aria-haspopup="dialog" aria-label="File actions">{{ icon("ellipsis") }}</button>{% endblock %}
+{% block content %}
+<div class="file-view" data-folder-id="{{ file.folder_id or '' }}">
+{% if missing %}
+<div class="preview preview--none">{{ icon("circle-alert", "lg") }}<p>This file is missing from the vault's disk.</p></div>
+{% elif inline and file.kind == "image" %}
+<div class="preview"><img class="preview__img" src="{{ view }}" alt="{{ file.name }}"></div>
+{% elif inline and file.kind == "pdf" %}
+{#- Desktop only: phones can't show a PDF in a page, so they get Open PDF below (TECH_PLAN §8 gotcha 21).
+    app.js sets src only where the frame is shown, so a phone never downloads it twice. #}
+<div class="preview preview--pdf"><iframe class="preview__pdf" data-pdf-src="{{ view }}" title="{{ file.name }}"></iframe></div>
+{% elif inline and file.kind == "video" %}
+<div class="preview preview--media"><video class="preview__video" src="{{ view }}" controls playsinline preload="metadata"></video></div>
+{% elif inline and file.kind == "audio" %}
+<div class="preview preview--media"><audio class="preview__audio" src="{{ view }}" controls preload="metadata"></audio></div>
+{% elif text is not none %}
+<div class="preview preview--text">
+  <pre class="preview__text" id="preview-text">{{ text }}</pre>
+</div>
+<div class="preview__copy"><button class="copy-btn" type="button" data-copy-from="#preview-text" aria-label="Copy the text of {{ file.name }}"><span class="copy-btn__label">COPY</span></button></div>
+{% else %}
+<div class="preview preview--none">{{ icon({"video": "video", "audio": "file", "text": "file-text", "pdf": "file-text", "image": "image"}.get(file.kind, "file"), "lg") }}<p>No preview for this type.</p></div>
+{% endif %}
+<div class="file-meta">
+  <h1 class="file-meta__name"><span>{{ file.name }}</span><button class="icon-btn" type="button" data-copy="{{ file.name }}" aria-label="Copy file name">{{ icon("copy", "sm") }}</button></h1>
+  <p class="file-meta__info">{{ type_label }} · {{ file.size | size }} · Added {{ file.created_at | when }}</p>
+</div>
+<div class="actions">
+  <a class="btn btn--primary btn--block" href="/api/files/{{ file.id }}/download" download>{{ icon("download", "sm") }}Download</a>
+  {% if inline and file.kind == "pdf" %}<a class="btn btn--secondary btn--block" href="{{ view }}" target="_blank" rel="noopener">Open PDF</a>{% endif %}
+</div>
+</div>
+{% endblock %}
+{% block dialogs %}
+<dialog class="sheet" id="sheet-file" aria-labelledby="sheet-file-title">
+  <span class="sheet__handle" aria-hidden="true"></span>
+  <p class="sheet__title" id="sheet-file-title">File</p>
+  <ul class="sheet__list">
+    <li><button class="sheet__item" type="button" data-action="rename">{{ icon("pencil", "sm") }}Rename</button></li>
+    <li><button class="sheet__item" type="button" data-action="move">{{ icon("folder-input", "sm") }}Move</button></li>
+    <li><button class="sheet__item" type="button" data-action="copy">{{ icon("copy", "sm") }}Copy name</button></li>
+    <li><button class="sheet__item sheet__item--danger" type="button" data-action="delete">{{ icon("trash", "sm") }}Delete</button></li>
+  </ul>
+  <button class="sheet__cancel" type="button" data-close>Cancel</button>
+</dialog>
+{% include "file_dialogs.html" %}
+{% endblock %}

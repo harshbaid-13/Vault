@@ -30,3 +30,4 @@ Revisit only after the vault has been in daily use for a few weeks.
 ## New ideas
 _(add below, one line each, with the date and why you wanted it)_
 - 2026-09-17 (S7): **Drag a row onto a folder to move it (desktop).** Optional in the S7 brief; left out so the checkbox → Move path stays the only one to test. Add if moving on the laptop feels slow.
+- 2026-09-17 (S8): **Select mode on Photos** (DESIGN §3.5: header ⋯ → Select → Move / Delete). Not in the S8 brief; for now, select in Files or delete one at a time in the viewer.

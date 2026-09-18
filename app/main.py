@@ -11,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import Response
 
-from app import auth, clips, db, files, folders, home, links, notes
+from app import auth, clips, db, files, folders, home, links, notes, photos
 from app.config import Settings
 from app.security import (
     AuthGateMiddleware,
@@ -29,7 +29,6 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 # S1 placeholder pages: path → (section, title, icon, stage that builds it).
 PLACEHOLDERS = {
     "/": ("home", "My Vault", "house", "S9"),
-    "/photos": ("photos", "Photos", "image", "S8"),
     "/favorites": ("favorites", "Favorites", "star", "S9"),
     "/search": ("search", "Search", "search", "S9"),
 }
@@ -80,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(links.router)
     app.include_router(files.router)
     app.include_router(folders.router)
+    app.include_router(photos.router)
 
     for path, (section, title, icon, stage) in PLACEHOLDERS.items():
         app.add_api_route(path, placeholder(section, title, icon, stage), methods=["GET"], response_class=HTMLResponse)

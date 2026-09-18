@@ -1,0 +1,30 @@
+{#- Photos (S8): every image and video, newest first, under month headings. The partial for
+    ?before= is the next 60; app.js appends it and joins a month split across two pages. -#}
+{% extends layout %}
+{% from "macros.html" import photo_tile, icon with context %}
+{% block content %}
+<div class="photos" data-photos{% if first_page %} data-refresh-after-upload{% endif %}>
+{% set ns = namespace(month=none) %}
+{% for photo in photos %}
+{%- set this_month = photo.created_at | month -%}
+{% if this_month != ns.month %}
+{% if not loop.first %}</div></section>{% endif %}
+<section class="photo-month" data-month="{{ this_month }}">
+  <div class="section-head"><h2 class="section-head__title">{{ this_month }}</h2></div>
+  <div class="photo-grid">
+{% set ns.month = this_month %}
+{% endif %}
+  {{ photo_tile(photo) }}
+{% if loop.last %}</div></section>{% endif %}
+{% endfor %}
+{% if next_page %}
+<a class="btn btn--secondary photos__more" href="/photos?before={{ next_page }}" data-photos-more>Load more</a>
+{% endif %}
+{% if not photos and first_page %}
+<div class="empty">
+  {{ icon("image", "lg") }}
+  <p>No photos yet. Tap the upload button to add some from your camera roll.</p>
+</div>
+{% endif %}
+</div>
+{% endblock %}

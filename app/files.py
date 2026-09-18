@@ -1,5 +1,5 @@
-"""Files: upload, list, download/view, rename, favorite, delete (S6), and the Files page with
-its folders (S7). Folder SQL and the move/delete-many routes are in folders.py.
+"""Files: upload, list, download/view, rename, favorite, delete (S6), the Files page with
+its folders (S7), and the preview page and thumbnails (S8). Folder SQL and the move/delete-many routes are in folders.py.
 
 Same shape as clips.py. The upload and file-serving routes are async so a 2 GB stream never
 holds a thread (TECH_PLAN §7); everything else is plain def.
@@ -14,7 +14,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException
 from starlette.responses import Response
 
-from app import db, folders, storage
+from app import db, folders, storage, thumbs
 from app.web import ApiError, render
 
 log = logging.getLogger("vault.files")
@@ -143,6 +143,31 @@ def files_page(request: Request, folder: str | None = None, sort: str | None = N
                   sort_label=folders.SORTS[sort], sort_options=sort_options(folder_id, sort))
 
 
+TEXT_PREVIEW_MAX = 1024 * 1024  # bigger text files show the details block only
+
+
+@router.get("/files/{file_id}")
+def preview_page(request: Request, file_id: str) -> Response:
+    """One file: the preview its kind allows, its details, Download and the ⋯ actions."""
+    settings = request.app.state.settings
+    file = None
+    if valid_id(file_id):
+        with db.connect(settings.db_path) as conn:
+            file = get_file(conn, file_id)
+            parent = folders.get_folder(conn, file["folder_id"]) if file and file["folder_id"] else None
+    if file is None:
+        raise HTTPException(404)
+    path = storage.path_for(settings.files_dir, file_id)
+    missing = not path.is_file()
+    inline = storage.inline_type(file["name"])
+    text = None
+    if file["kind"] == "text" and inline and not missing and file["size"] <= TEXT_PREVIEW_MAX:
+        text = path.read_bytes().decode("utf-8", errors="replace")
+    return render(request, "preview.html", section="files", title=file["name"],
+                  file=file, parent=parent, inline=bool(inline) and not missing, text=text, missing=missing,
+                  type_label=storage.extension(file["name"]).upper() or "File")
+
+
 # ---- API -----------------------------------------------------------------------------
 
 @router.post("/api/files", status_code=201)
@@ -218,6 +243,7 @@ def api_delete(request: Request, file_id: str) -> Response:
     if not deleted:
         raise ApiError(NOT_FOUND, 404)
     storage.remove(settings.files_dir, file_id)
+    thumbs.remove(settings.thumbs_dir, file_id)
     log.info("File %s deleted", file_id)
     return Response(status_code=204)
 
@@ -259,3 +285,22 @@ async def api_download(request: Request, file_id: str) -> Response:
 async def api_view(request: Request, file_id: str) -> Response:
     """Inline only for the allowlist in storage.INLINE; everything else downloads."""
     return await file_response(request, file_id, inline=True)
+
+
+@router.get("/api/files/{file_id}/thumb")
+def api_thumb(request: Request, file_id: str) -> Response:
+    """A ~400px WebP of an image, made on first request. 404 when there can't be one (not an
+    image, HEIC, corrupt, too many pixels): the page shows the type icon instead."""
+    settings = request.app.state.settings
+    file = None
+    if valid_id(file_id):
+        with db.connect(settings.db_path) as conn:
+            file = get_file(conn, file_id)
+    if file is None:
+        raise ApiError(NOT_FOUND, 404)
+    thumb = thumbs.get(settings, file_id) if file["kind"] == "image" else None
+    if thumb is None:
+        raise ApiError("No thumbnail for this file.", 404)
+    # A file's bytes never change, so its thumbnail can be kept a week — privately, in this browser.
+    return FileResponse(thumb, media_type="image/webp",
+                        headers={"Cache-Control": "private, max-age=604800", "Content-Security-Policy": FILE_CSP})

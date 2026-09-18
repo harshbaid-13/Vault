@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S7 (Folders) — done; S8 (Previews, thumbnails, Photos) is next
-**Last updated:** 2026-09-17, after S7
+**Current stage:** S8 (Previews, thumbnails, Photos) — done; S9 (Home, Favorites, search) is next
+**Last updated:** 2026-09-17, after S8
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -45,7 +45,7 @@ runs at the end of every one.
       Range 206, rename, favorite, delete, `?partial=1` refresh
 - [x] S7 — Folders: tree, breadcrumb, create/rename/delete with counts, move picker, select
       mode (Move/Delete), per-folder sort
-- [ ] S8 — Thumbnails (EXIF, bomb limit, HEIC-safe), preview page per kind (PDF iframe on
+- [x] S8 — Thumbnails (EXIF, bomb limit, HEIC-safe), preview page per kind (PDF iframe on
       desktop, Open/Download on phone), Photos grid by month, viewer with neighbours
 - [ ] S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial +
       `/api/search`, LIKE escaping, hidden clips title-only
@@ -224,11 +224,51 @@ runs at the end of every one.
   one checkbox, Shift-clicked a range of 4, moved them with the picker, bulk-deleted a folder + a
   file. Logs show ids and counts only. Docker image **not** rebuilt (your vault container is running).
 
+  **Your check (2026-09-17):** "done cool".
+
+- **S8** — Previews, thumbnails, Photos. `app/thumbs.py`: Pillow (already an approved dependency),
+  first request makes `data/thumbs/<id>.webp` (400px long side, WebP q80), JPEG `draft()` decode,
+  `exif_transpose`, 80 MP limit checked from the header plus Pillow's own bomb error, at most two
+  decodes at once, written via `tmp/` + rename. Anything that fails leaves `<id>.none` and the
+  route 404s (logged by id and exception type only). `GET /api/files/{id}/thumb` (`private,
+  max-age=604800`, sandbox CSP). Thumbnails go with their file on single, folder and bulk delete.
+  `/files/{id}` preview page: image; PDF iframe (only where there's a mouse; app.js sets `src`
+  there, so a phone never loads it) plus Open PDF; video/audio players (`preload="metadata"`);
+  text ≤ 1 MB escaped in a scroll box with COPY; everything else (incl. HTML/SVG/HEIC) "No preview
+  for this type." Details line (`PDF · 16 KB · Added Today, 18:14`) with Copy name, Download; ★ in
+  the header, ⋯ Rename / Move / Copy name / Delete (back to the folder). File and folder rows now
+  open the preview and have a 40px icon box, images with a thumbnail over it; move picker and
+  Rename modal moved into `file_dialogs.html`. `app/photos.py`: `/photos` images + videos from
+  every folder, newest first, month headings in VAULT_TIMEZONE, 60 per page with a
+  `?before=<created_at>,<id>` cursor, the next page loaded as the "Load more" link nears the screen
+  (a month split over two pages joins up). `/photos/{id}` viewer page: that photo ± 10 neighbours
+  as a scroll-snap strip; swipe / ← → / on-screen arrows; the address, title, ★ and ⋯ follow the
+  slide; reaching an edge slide with more beyond reloads around it; ‹, ✕ and Esc go back in history
+  to the grid (scroll kept) or to `/photos`; ⋯ Download / Rename / Copy link ("Link copied. It only
+  works when logged in to your vault.") / Delete (then the next photo). Videos play in the slide
+  (`preload="none"`); HEIC shows "No preview" + Download. 380 tests pass (42 new:
+  `test_thumbs.py`, `test_photos.py`). Headless Firefox with 74 generated files (70 JPEGs, a 12 MP
+  JPEG with EXIF orientation 6, a fake HEIC, a PDF, a text file): grid 60 → 72 after scrolling,
+  HEIC tile shows its icon, rotated thumbnail is portrait, viewer → ArrowRight changes address and
+  menu, delete moves to the next, Esc back to `/photos`, Files rows with thumbnails, PDF on a
+  500px window shows Download + Open PDF with no frame loaded, text preview escaped, at 1280px the
+  PDF renders in the frame (Firefox), rename and ★ from the preview. No horizontal scroll.
+  Not tried: a real video (no ffmpeg here to make one; Range/206 is tested since S6), Chrome.
+  Docker image not rebuilt.
+
 ## Next
-S8 — Previews, thumbnails, Photos, from `docs/PLAYBOOK.md` (adjusted by TECH_PLAN §9: PDF iframe
-on desktop, Open/Download on phone, no page-1 render; videos in the grid with a play badge).
+S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial + `/api/search`,
+from `docs/PLAYBOOK.md` adjusted by TECH_PLAN §9.
 
 ## Known issues
+- **Not checked in S8, please check on your devices:** a video playing and seeking on the phone,
+  a real Android camera photo's rotation (thumbnail and viewer), the PDF frame in **Chrome** on the
+  laptop (TECH_PLAN gotcha 7), and how fast the grid feels over Tailscale the first time (thumbnails
+  are made on first view, two at a time; later views come from the browser cache).
+- **The viewer reloads every ~10 swipes** (it's sent 10 neighbours each side). A short flash, then
+  swiping carries on from the same photo.
+- **Thumbnails that failed once stay failed** (`<id>.none`). If a future Pillow learns a format,
+  delete `data/thumbs/*.none` to retry.
 - **`static/js/app.js` is 1,400 lines**, past TECH_PLAN §9's "one JS file until ~1,000 lines".
   Not split in S7 (not asked). Splitting per feature is a no-build change for S11 if you want it.
 - **Checked-then-filtered rows stay selected.** Typing in the filter hides rows but keeps their
@@ -264,8 +304,6 @@ on desktop, Open/Download on phone, no page-1 render; videos in the grid with a 
   out, lower `MAX_UPLOAD_SIZE_MB` and note why.
 - **Upload panel covers the bottom of the list** while it is open (by design, DESIGN §3.13). It
   collapses with ⌄ and hides itself 4 s after everything succeeds; a failed row keeps it open.
-- **Tapping a file opens `/api/files/{id}/view`** — the raw file inline when it's safe, otherwise
-  it downloads. S8 points rows at the preview page.
 - **Not checked at a true 375px in S2.** Headless Firefox won't go below 500px wide. The
   login form is max 360px and the modal is full width minus 16px each side, so it should fit;
   check on the phone in S3 (same for the Settings page).
@@ -432,4 +470,18 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S7** — Bulk delete skips ids that are already gone; bulk move refuses the whole move if any
   item or the destination is gone (404) or a folder name clashes there (409).
 - **S7** — Drag-to-move on desktop not built (optional in the brief) → `docs/BACKLOG.md`.
+- **S8** — Thumbnails are cached in the browser for a week (`private, max-age=604800`), unlike files
+  (`no-cache`): a file's bytes never change, and 60 revalidations per grid page would slow it down.
+- **S8** — No "include videos" toggle: videos are always in Photos with a play badge (TECH_PLAN §9).
+- **S8** — The viewer is its own page per photo (`/photos/<id>`, TECH_PLAN §3), so the phone's back
+  button closing it is ordinary history; swiping updates the address with `replaceState`, so Back
+  still goes to the grid in one step.
+- **S8** — Preview ⋯ has no Download or Favorite: Download is the page's main button and ★ is in the
+  header (D4). The page's header title is the folder (where ‹ goes); the file name is the `<h1>`.
+- **S8** — "Pin" in the brief is Favorite (★), as everywhere since D4.
+- **S8** — The PDF frame shows only on devices with a mouse (`hover: hover` and `pointer: fine`),
+  as gotcha 21 says; a touch laptop without a mouse gets Open PDF.
+- **S8** — Text over 1 MB, or not UTF-8 enough to read, shows the details only / replacement marks.
+- **S8** — File and folder rows got a 40px icon box so names line up with thumbnail rows.
+- **S8** — Select mode on Photos (DESIGN §3.5) not built: not in the brief → `docs/BACKLOG.md`.
 

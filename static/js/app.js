@@ -210,6 +210,7 @@
     if (!button.dataset.item) return;
     try {
       await api('PATCH', button.dataset.item, { favorite: on });
+      if ('viewerStar' in button.dataset && viewerSlide) viewerSlide.toggleAttribute('data-favorite', on);
     } catch (error) {
       setStar(button, !on);
       failed(error);
@@ -315,6 +316,11 @@
         return;
       }
     }
+    if ('viewerMenu' in trigger.dataset) {
+      viewerRemoveCurrent();
+      toast('Deleted');
+      return;
+    }
     if (trigger.dataset.afterDelete) {
       editorDeleted = true;
       window.location.replace(trigger.dataset.afterDelete);
@@ -360,6 +366,12 @@
         break;
       case 'rename':
         if (trigger?.dataset.rename !== undefined) openRename(trigger);
+        break;
+      case 'copy-link':
+        // An address inside the vault, not a share link: it only opens for you, logged in.
+        writeClipboard(`${window.location.origin}/files/${url.split('/').pop()}`).then((ok) => {
+          toast(ok ? 'Link copied. It only works when logged in to your vault.' : COPY_FALLBACK_MESSAGE, { error: !ok });
+        });
         break;
       case 'move':
         if (url) openPicker(itemOf(url));
@@ -888,9 +900,20 @@
       }
       submit.disabled = true;
       try {
-        await api('PATCH', renameTrigger.dataset.item, { name });
+        const renamed = await api('PATCH', renameTrigger.dataset.item, { name });
         form.closest('dialog').close();
-        await refreshMain();
+        // Header buttons live outside <main>, so they learn the new name here.
+        Object.assign(renameTrigger.dataset, { rename: renamed.name, sheetTitle: renamed.name });
+        if (renameTrigger.dataset.copy !== undefined) renameTrigger.dataset.copy = renamed.name;
+        if (viewerSlide) {
+          viewerSlide.dataset.name = renamed.name;
+          $('[data-caption-name]', viewerSlide).textContent = renamed.name;
+          const img = $('img', viewerSlide);
+          if (img) img.alt = renamed.name;
+          document.title = `${renamed.name} · My Vault`;
+        } else {
+          await refreshMain();
+        }
         toast('Renamed');
       } catch (problem) {
         if (problem.status === 401) failed(problem);
@@ -1264,10 +1287,16 @@
   }
 
   /* ---- Photo viewer --------------------------------------------------- */
+  /* Slides are a scroll-snap strip, so swiping is the browser's own. This keeps the
+     header star, the ⋯ sheet and the address in step with the slide on screen. */
+
+  let viewerSlide = null;
+  let viewerRemoveCurrent = null;
 
   function initViewer(viewer) {
     const track = $('.viewer__track', viewer);
     let idleTimer;
+    let settleTimer;
 
     const showChrome = () => {
       viewer.classList.remove('is-chrome-hidden');
@@ -1278,15 +1307,69 @@
       clearTimeout(idleTimer);
       viewer.classList.add('is-chrome-hidden');
     };
+    const slides = () => $$('.viewer__slide', track);
     const step = (direction) => track.scrollBy({
       left: direction * track.clientWidth,
       behavior: reducedMotion.matches ? 'auto' : 'smooth',
     });
 
-    const start = location.hash && document.getElementById(location.hash.slice(1));
-    if (start) track.scrollLeft = start.offsetLeft;
+    function show(slide) {
+      viewerSlide = slide;
+      const { id, name } = slide.dataset;
+      const star = $('[data-viewer-star]');
+      star.dataset.item = `/api/files/${id}`;
+      setStar(star, 'favorite' in slide.dataset);
+      Object.assign($('[data-viewer-menu]').dataset, {
+        item: `/api/files/${id}`, sheetTitle: name, download: `/api/files/${id}/download`, rename: name,
+      });
+      document.title = `${name} · My Vault`;
+      history.replaceState(history.state, '', `/photos/${id}`);
+      $$('video', track).forEach((video) => { if (!slide.contains(video)) video.pause(); });
+      // Past the neighbours this page was sent with: reload around this one.
+      const all = slides();
+      if ((slide === all[0] && 'moreNewer' in track.dataset)
+        || (slide === all[all.length - 1] && 'moreOlder' in track.dataset)) {
+        window.location.replace(`/photos/${id}`);
+      }
+    }
 
-    track.addEventListener('click', () => {
+    function settle() {
+      const all = slides();
+      const slide = all[Math.round(track.scrollLeft / track.clientWidth)];
+      if (slide && slide !== viewerSlide) show(slide);
+    }
+
+    // Back, ✕ and Escape return to the grid the way the browser's Back does, keeping its scroll.
+    function close() {
+      const cameFromPhotos = document.referrer.startsWith(`${window.location.origin}/photos`);
+      if (cameFromPhotos && history.length > 1) history.back();
+      else window.location.href = '/photos';
+    }
+
+    viewerRemoveCurrent = () => {
+      const all = slides();
+      const index = all.indexOf(viewerSlide);
+      viewerSlide.remove();
+      const next = all[index + 1] || all[index - 1];
+      if (!next) {
+        window.location.replace('/photos');
+        return;
+      }
+      track.scrollLeft = next.offsetLeft;
+      show(next);
+    };
+
+    const start = $('[data-current]', track) || slides()[0];
+    track.scrollLeft = start.offsetLeft;
+    show(start);
+
+    track.addEventListener('scroll', () => {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(settle, 120);
+    });
+    window.addEventListener('resize', () => { track.scrollLeft = viewerSlide.offsetLeft; });
+    track.addEventListener('click', (event) => {
+      if (event.target.closest('video, a, button')) return;
       if (viewer.classList.contains('is-chrome-hidden')) showChrome();
       else hideChrome();
     });
@@ -1296,6 +1379,11 @@
     viewer.addEventListener('click', (event) => {
       const button = event.target.closest('[data-viewer-step]');
       if (button) step(Number(button.dataset.viewerStep));
+      const back = event.target.closest('[data-viewer-back]');
+      if (back && event.button === 0 && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        close();
+      }
     });
     document.addEventListener('keydown', (event) => {
       if ($('dialog[open]')) return;
@@ -1303,12 +1391,72 @@
         event.preventDefault();
         step(event.key === 'ArrowRight' ? 1 : -1);
       } else if (event.key === 'Escape') {
-        const back = $('[data-viewer-back]');
-        if (back) window.location.href = back.href;
+        close();
       }
     });
     showChrome();
   }
+
+  /* ---- Photos grid: load the next 60 as the end comes into view ------- */
+
+  function initPhotos(container) {
+    let loading = false;
+    const observer = 'IntersectionObserver' in window
+      ? new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) loadMore();
+      }, { rootMargin: '800px' })
+      : null;
+
+    async function loadMore() {
+      const link = $('[data-photos-more]', container);
+      if (!link || loading) return;
+      loading = true;
+      try {
+        const url = new URL(link.href);
+        url.searchParams.set('partial', '1');
+        const response = await fetch(url);
+        if (response.status === 401) {
+          failed({ status: 401 });
+          return;
+        }
+        if (!response.ok) throw new Error("Couldn't load more photos. Scroll to try again.");
+        // The server rendered these tiles; they're parsed here, never built.
+        const page = document.createElement('template');
+        page.innerHTML = await response.text();
+        link.remove();
+        $$('.photo-month', page.content).forEach((section) => {
+          const last = $$('.photo-month', container).pop();
+          if (last && last.dataset.month === section.dataset.month) {
+            $('.photo-grid', last).append(...$('.photo-grid', section).children);
+          } else {
+            container.append(section);
+          }
+        });
+        const next = $('[data-photos-more]', page.content);
+        if (next) {
+          container.append(next);
+          observer?.observe(next);
+        }
+      } catch (error) {
+        failed(error);
+      } finally {
+        loading = false;
+      }
+    }
+
+    container.addEventListener('click', (event) => {
+      if (!event.target.closest('[data-photos-more]')) return;
+      event.preventDefault();
+      loadMore();
+    });
+    const link = $('[data-photos-more]', container);
+    if (link) observer?.observe(link);
+  }
+
+  // A thumbnail that can't exist (HEIC, corrupt) 404s: hide the <img> and the icon under it shows.
+  document.addEventListener('error', (event) => {
+    if (event.target instanceof HTMLImageElement && 'thumb' in event.target.dataset) event.target.hidden = true;
+  }, true);
 
   /* ---- Delegated clicks ----------------------------------------------- */
 
@@ -1396,7 +1544,12 @@
   if ($('[data-check]')) runConnectionChecks();
   $$('.upload-row').forEach(renderRow);
   updateUploadTitle();
+  $$('img[data-thumb]').forEach((img) => { if (img.complete && !img.naturalWidth) img.hidden = true; });
   const viewer = $('.viewer');
   if (viewer) initViewer(viewer);
+  const photos = $('[data-photos]');
+  if (photos) initPhotos(photos);
+  // The PDF preview is framed only where it's shown (desktop); a phone gets Open PDF instead.
+  $$('[data-pdf-src]').forEach((frame) => { if (pointerFine.matches) frame.src = frame.dataset.pdfSrc; });
   $$('dialog[data-open-on-load]').forEach((dialog) => dialog.showModal());
 })();

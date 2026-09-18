@@ -322,7 +322,7 @@ def test_files_page(auth_client):
     html = auth_client.get("/files").text
     [row] = re.findall(r'<li class="row" data-name="electricity-bill-aug.pdf">.*?</li>', html, re.S)
     assert '<span class="name__head">electricity-bill</span><span class="name__tail">-aug.pdf</span>' in row
-    assert f'href="/api/files/{file["id"]}/view"' in row
+    assert f'href="/files/{file["id"]}"' in row
     assert "4 B · Just now" in row
     assert "icon--file-text" in row and 'class="pin-mark"' in row
     assert f'data-download="/api/files/{file["id"]}/download"' in row
