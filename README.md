@@ -14,6 +14,66 @@ Everything below is typed in a terminal on the **office computer** (Ubuntu 26.04
 
 ---
 
+## Security model and threat assumptions
+
+Read this before you run it. The vault is built for one specific situation, and it is only
+safe inside that situation.
+
+**What it assumes**
+
+- **One person, one password.** There are no accounts, roles or permissions, and there never
+  will be. Anyone who knows the password is you.
+- **Your tailnet is the security boundary.** The app trusts every device that can reach it.
+  Tailscale — not the app — is what keeps strangers out.
+- **The office computer is trusted.** Files, the database and backups are stored unencrypted
+  on its disk. Anyone with an account on that machine, or with the disk in their hand, has
+  everything. Use full-disk encryption if that matters to you.
+
+**Never do these**
+
+- **Do not run `tailscale funnel`.** That publishes the vault to the whole internet.
+- **Do not forward a port** on your router to port 8000.
+- **Do not put it behind a public reverse proxy** (nginx, Caddy, Cloudflare Tunnel, ngrok).
+- **Do not change the bind address** to `0.0.0.0` on the host. `docker-compose.yml` publishes
+  on `127.0.0.1:8000` on purpose; `tailscale serve` is what reaches out to your devices.
+
+One password with no second factor is fine on a private tailnet. It is not fine on the open
+internet, and this app does not pretend otherwise.
+
+**What the app does do**
+
+- Login is required on **every** route by default. Only `/login`, `/static` and `/healthz` are
+  public — a new route is protected without anyone remembering to protect it.
+- The password is stored only as an **Argon2id** hash. After five wrong attempts, logging in
+  locks for 60 seconds, doubling with each further miss up to 15 minutes. Changing the
+  password logs out every other device.
+- Writes must come from the vault's own pages (an `Origin`/`Referer` check), so another site
+  open in the same browser cannot act on your vault.
+- Uploaded HTML, SVG, XML and JS are **never** shown inline — they download, with a sandbox
+  CSP and `nosniff`, so an uploaded file cannot run script as your vault.
+- A file name you type is display text only. Bytes on disk are named by a generated UUID, so
+  a name like `../../etc/passwd` is just a name.
+- The logs record ids and counts only — never a password, note, clipboard entry, file name or
+  search term. The web-server access log is switched off for the same reason.
+
+**What it deliberately does not do**
+
+- **No encryption at rest.** `data/` and `backups/` are ordinary files.
+- **Sessions are signed cookies.** Logging out clears the cookie in that browser, but a cookie
+  copied off a device stays valid until it expires (30 days). To log out *everywhere*, change
+  the password.
+- **The login lockout is one global counter**, because behind `tailscale serve` every request
+  arrives from the same address. Someone already on your tailnet can therefore lock *you* out
+  for up to 15 minutes by guessing wrong. That is the intended trade: a stranger who somehow
+  reaches the login page cannot brute-force it.
+- **No audit log, no intrusion detection, no rate limit** on anything but login.
+
+**Found a problem?** Open a GitHub issue for anything routine. For something that would let
+someone else read a vault's contents, please report it privately through GitHub's *Security →
+Report a vulnerability* instead of opening a public issue.
+
+---
+
 ## 1. Install Docker and Tailscale (once)
 
 ### Docker
@@ -171,7 +231,7 @@ crontab -e
 (Pick `nano` if asked.) Add this line at the bottom, with your own folder, then save:
 
 ```text
-30 2 * * * /home/harsh/personal-vault/backup.sh >> /home/harsh/personal-vault/backups/backup.log 2>&1
+30 2 * * * $HOME/personal-vault/backup.sh >> $HOME/personal-vault/backups/backup.log 2>&1
 ```
 
 That runs at 02:30 every night. The office computer must be on (not asleep) at that time.
