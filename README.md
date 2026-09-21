@@ -209,6 +209,17 @@ kept snapshot, remove them with:
 ./backup.sh --prune-mirror
 ```
 
+### Check the vault's files
+
+```bash
+docker compose exec vault python -m app.cli check
+```
+
+It compares the database with what's on disk: `Everything matches.` is what you want. It can
+report **orphans** (bytes with no entry — what a power cut in the middle of a delete leaves
+behind; `check --fix` deletes them) and **MISSING** files (an entry whose bytes are gone —
+restore those from a backup, section 8). Nothing is deleted unless you pass `--fix`.
+
 ## 8. Restore
 
 This puts the vault back exactly as it was at one backup. It checks everything first and
@@ -247,6 +258,7 @@ the same password as before — it's inside the backup.
 | **Backup INCOMPLETE** | It lists the file ids it couldn't copy. Usually a file missing from `data/files` (disk trouble). The next backup tries again; the earlier complete snapshots are still good. |
 | **Forgot the password** | `docker compose run --rm vault python -m app.cli set-password` (logs every device out). |
 | **The vault won't start and the log says SESSION_SECRET** | `.env` still has the example value or is missing. Redo section 2. |
+| **A file won't open, or the vault seems to have lost one** | `docker compose exec vault python -m app.cli check` says whether the file's bytes are missing (restore, section 8) or whether there are leftovers to clean up (`check --fix`). |
 | **Anything else** | `docker compose logs vault --tail 50` shows what happened. |
 
 ---
@@ -260,6 +272,7 @@ personal-vault/
 ├── Dockerfile            Python 3.12 image, runs as your user (uid 1000)
 ├── .env.example          settings to copy into .env (secrets live only in .env)
 ├── backup.sh             ./backup.sh → python -m app.backup inside the container
+├── scripts/seed_demo.py  fills a throw-away vault with demo content, to test how it behaves when full
 ├── app/                  the web app: one Python module per feature (clips, notes, links, files,
 │   │                     folders, photos, home), plus login, storage, thumbnails, backup, restore
 │   ├── migrations/       the database layout

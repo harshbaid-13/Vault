@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S10 (Backup, restore, README) — done; S11 (Hardening) is next
-**Last updated:** 2026-09-18, after S10
+**Current stage:** S11 (Hardening) — done. v1 is complete.
+**Last updated:** 2026-09-21, after S11
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -52,7 +52,7 @@ runs at the end of every one.
 - [x] S10 — `app.backup`: DB snapshot (backup API + integrity check) then copy-if-missing
       into `backups/files-mirror` with hash checks, keep 30 snapshots, `--prune-mirror`,
       `--verify`; `app.restore <snapshot>`; `backup.sh`, cron, host rsync to external drive, README
-- [ ] S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files,
+- [x] S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files,
       fresh-install run of the README
 
 ## Done so far
@@ -309,11 +309,73 @@ runs at the end of every one.
   start → the note and file are back, `--verify` OK, files owned by uid 1000. Your vault's
   image was not rebuilt.
 
+- **S11** — Hardening. No new features; the report is below.
+
+  **Found and fixed**
+  1. **No test walked the routes.** TECH_PLAN §5 #1 promised one. `test_security` now enumerates
+     all 49 routes through the included routers and checks each one logged out: `/api` → 401 with
+     the standard sentence, pages → 302/303 to `/login`, only `/login`, `/healthz` and `/static`
+     public. Nothing was unprotected.
+  2. **`python -m app.cli check [--fix]`** (TECH_PLAN §7 left it to S11): compares the database
+     with `data/files`. Lists orphan bytes (and deletes them with `--fix`), rows whose bytes are
+     missing or the wrong size (never deleted — the row is the only record, and a restore brings
+     the bytes back), and thumbnails of files that are gone. `tests/test_check.py`, and a README
+     section plus a troubleshooting row.
+  3. **Nothing was compressed.** A folder holding 2,000 files is 2.3 MB of HTML. Added
+     `CompressMiddleware` (Starlette's gzip, no new dependency) for pages, JSON and static files,
+     skipping `/api/files/…` bytes and any request with a `Range` header, so video seeking and
+     already-compressed photos are untouched: Files 2,303 → 173 KB, Notes 370 → 32 KB,
+     `app.css` 42 → 10 KB, at about +10 ms on the worst page. Tested, including that a
+     range request still answers 206 with the exact bytes.
+  4. **README gaps:** no mention of `cli check` (added), and `scripts/seed_demo.py` missing from
+     the project structure (added).
+
+  **Checked, nothing to fix**
+  - **Escaping and paths:** no `|safe` anywhere; the three `innerHTML` uses in `app.js` insert
+     HTML the server rendered and escaped; JS sets `textContent` everywhere else. Paths only ever
+     come from generated ids (`storage.path_for`, `thumbs.path_for` both validate 32 hex chars and
+     resolve inside their folder); names are display text only.
+  - **Uploads:** html, svg, xml, js, and anything not on the inline allowlist always download,
+     with `nosniff` and a `sandbox` CSP; PDFs get `frame-ancestors 'self'` instead, as planned.
+  - **Logs and errors:** every `log.` call in `app/` carries ids, counts or sizes only (re-read
+     one by one); `--no-access-log`; 500 pages say nothing about the exception; the backup and
+     restore output is ids and counts too.
+  - **Login, sessions, CSRF, lockout, `next`**: as in TECH_PLAN §5, each with its test.
+  - **Reliability:** starting on an empty data folder creates `files/ thumbs/ tmp/`; `tmp/` is
+     emptied at startup (a restart mid-upload leaves nothing); migrations re-run safely; foreign
+     keys and the root-folder unique index are enforced in SQL.
+  - **Crash restart** (an old known issue): a probe container with `restart: unless-stopped` that
+     exits by itself came back three times, so the vault restarts after a crash. `docker stop` and
+     `docker kill` are treated by Docker as "you stopped it" and don't restart — by design.
+
+  **Performance** with `scripts/seed_demo.py` (2,000 files, 500 notes, 200 clips, 100 links,
+  40 folders, all in a separate data folder; the script refuses to touch a folder that already
+  holds a vault). Median server time: Home 2.3 ms, Files 2.3 ms, Photos 2.1 ms, Notes 12 ms,
+  Search 3.9 ms, Settings 1.1 ms. Worst case, all 2,000 files in one folder: 54 ms and 173 KB
+  over the wire after compression. No new indexes were needed — the ones from S1 cover every
+  list and sort.
+
+  **Mobile QA** at 500 px (headless Firefox will not go below that) and 768 px, light and dark,
+  on 15 pages plus an open sheet and a list scrolled to the bottom: no horizontal scrolling, no
+  tap target under 44 px, every input ≥ 16 px, nothing hidden behind the tab bar. The only flag
+  was the 20 px checkbox inside the Hide-content and Use-http switches, whose 44 px label is the
+  real target. A true 375 px run stays a phone check (→ BACKLOG).
+
+  **Fresh install** from a clean copy, following the README exactly (on port 8768 so your vault
+  kept running): `mkdir data backups` → `.env` with a generated secret → `docker compose up -d
+  --build` → healthy → `set-password` → log in → upload a 2 MB file → download it byte-identical
+  → `cli check` clean → `./backup.sh` complete. 434 tests pass (12 new).
+
 ## Next
-S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files, fresh-install
-run of the README.
+Nothing — v1 is done. Ideas live in `docs/BACKLOG.md`; `docs/PLAYBOOK.md` Part C has the prompts
+for adding a feature or reporting a bug later.
 
 ## Known issues
+- **v1 is feature-complete.** What's left here is either deliberate (below) or in `docs/BACKLOG.md`.
+- **Automated mobile QA runs at 500 px, not 375 px** — headless Firefox clamps there. Layout has
+  no fixed widths above 375 px, and you check the phone each stage, but it isn't automated.
+- **Notes, Clipboard and Links render every item** (500 notes = 370 KB, 32 KB gzipped). Fine now;
+  paging is in the backlog.
 - **Restore can't tell whether the vault is still running.** The README says `docker compose down`
   first; restoring under a running vault would leave it holding the moved-aside database until
   its next request. S11 could add a check.
@@ -334,8 +396,6 @@ run of the README.
   what is shown.
 - **The move picker lists every folder from one request** (`/api/folders`). Fine for hundreds of
   folders; revisit only if the tree gets huge.
-- **Auto-restart after a crash not tested.** `restart: unless-stopped` is set; killing PID 1 from
-  inside the container is ignored by Linux, and `docker kill` counts as a manual stop.
 - **Pages answer GET only, not HEAD** (FastAPI routes). `curl -I` shows 405. Harmless; revisit
   only if something needs HEAD.
 - **Starlette warns that its test client wants `httpx2`** instead of `httpx`. Only a warning

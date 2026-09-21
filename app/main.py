@@ -15,6 +15,7 @@ from app import auth, clips, db, files, folders, home, links, notes, photos
 from app.config import Settings
 from app.security import (
     AuthGateMiddleware,
+    CompressMiddleware,
     LoginLimiter,
     OriginCheckMiddleware,
     SecurityHeadersMiddleware,
@@ -45,7 +46,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.limiter = LoginLimiter()
     # add_middleware wraps: the last one added runs first.
-    # Request order: headers → session cookie → Origin check → auth gate → route.
+    # Request order: headers → gzip → session cookie → Origin check → auth gate → route.
     app.add_middleware(AuthGateMiddleware, is_logged_in=lambda session: auth.is_logged_in(session, settings.db_path))
     app.add_middleware(OriginCheckMiddleware, allowed_origins=settings.allowed_origins)
     app.add_middleware(
@@ -56,6 +57,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         same_site="lax",
         https_only=settings.cookie_secure,
     )
+    app.add_middleware(CompressMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

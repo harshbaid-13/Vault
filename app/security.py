@@ -9,6 +9,7 @@ from collections.abc import Callable
 from urllib.parse import quote, urlsplit
 
 from starlette.datastructures import Headers, MutableHeaders
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, RedirectResponse, Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -61,6 +62,28 @@ class SecurityHeadersMiddleware:
             await send(message)
 
         await self.app(scope, receive, send_with_headers)
+
+
+class CompressMiddleware:
+    """Gzip pages, JSON and static text — a folder of 2,000 files is 2.3 MB of HTML and about
+    250 KB gzipped, which matters over a phone connection (S11).
+
+    Uploaded bytes are never compressed: photos, video, PDFs and zips are compressed already,
+    and gzipping a response would break the byte ranges a video player asks for. Requests that
+    carry a Range header skip it for the same reason.
+    """
+
+    FILE_BYTES = "/api/files/"
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.plain = app
+        self.compressed = GZipMiddleware(app, minimum_size=1024, compresslevel=6)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        path = scope.get("path", "")
+        skip = (scope["type"] != "http" or path.startswith(self.FILE_BYTES)
+                or Headers(scope=scope).get("range") is not None)
+        await (self.plain if skip else self.compressed)(scope, receive, send)
 
 
 # ---- Login limiter --------------------------------------------------------------------
