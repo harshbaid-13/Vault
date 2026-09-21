@@ -166,7 +166,7 @@ def api_search(request: Request, q: str = "", type: str | None = None) -> dict:
 
 def last_backup_text(settings) -> str:
     """Newest DB snapshot written by the backup (S10), shown in VAULT_TIMEZONE."""
-    snapshots = list((settings.backup_dir / "db").glob("vault-*.db"))
+    snapshots = [p for p in (settings.backup_dir / "db").glob("vault-*.db") if not p.stem.endswith("-INCOMPLETE")]
     if not snapshots:
         return "Never"
     newest = max(snapshot.stat().st_mtime for snapshot in snapshots)

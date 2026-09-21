@@ -1,7 +1,7 @@
 # Progress
 
-**Current stage:** S9 (Home, Favorites, search) — done; S10 (Backup, restore, README) is next
-**Last updated:** 2026-09-18, after S9
+**Current stage:** S10 (Backup, restore, README) — done; S11 (Hardening) is next
+**Last updated:** 2026-09-18, after S10
 
 Claude: update this file at the end of every stage. Keep it short.
 
@@ -49,7 +49,7 @@ runs at the end of every one.
       desktop, Open/Download on phone), Photos grid by month, viewer with neighbours
 - [x] S9 — Home (Favorites 6 + Recent 10), Favorites page, search page + live partial +
       `/api/search`, LIKE escaping, hidden clips title-only
-- [ ] S10 — `app.backup`: DB snapshot (backup API + integrity check) then copy-if-missing
+- [x] S10 — `app.backup`: DB snapshot (backup API + integrity check) then copy-if-missing
       into `backups/files-mirror` with hash checks, keep 30 snapshots, `--prune-mirror`,
       `--verify`; `app.restore <snapshot>`; `backup.sh`, cron, host rsync to external drive, README
 - [ ] S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files,
@@ -281,11 +281,44 @@ runs at the end of every one.
   Notes started on Notes; Favorites grouped, Unfavorite from ⋯ refreshed it. At 1280px "/" focused
   the header field and Enter opened `/search?q=bill`. No horizontal scroll. Docker not rebuilt.
 
+  **Your check (2026-09-18):** "works great".
+
+- **S10** — Backup, restore, README. `app/backup.py` (`python -m app.backup`): snapshot with
+  SQLite's online backup API into `backups/db/vault-YYYY-MM-DD_HHMM.db` (a second run in the same
+  minute gets `-2`), switched to a single self-contained file (no -wal/-shm), `PRAGMA
+  integrity_check`, then copy-if-missing of every file the snapshot names into
+  `backups/files-mirror/<id[:2]>/<id>` via `.part` + fsync + rename with its sha256 checked;
+  free space checked against the bytes to copy; any gap → `…-INCOMPLETE.db`, exit 1; keeps the
+  newest BACKUP_KEEP (30). `--verify` re-hashes the mirror against the snapshots' hashes;
+  `--prune-mirror` deletes mirror files no kept snapshot names. `app/restore.py`
+  (`python -m app.restore [snapshot]`, lists without a name): checks the snapshot and that every
+  file it needs is in the mirror at the right size before touching anything, then moves the
+  current data into `data/before-restore-<time>/`, copies the snapshot in and only the files it
+  names (hash-checked); any failure part-way puts the old data back. Refuses `-INCOMPLETE`
+  snapshots. Output is ids, counts and sizes only. `backup.sh` (`docker compose exec -T`, sets PATH
+  for cron). Settings → Last backup ignores incomplete snapshots. README rewritten for a
+  non-developer: Docker install (fetched from docs.docker.com on 2026-09-18: apt repo,
+  `docker.sources`, docker group, `systemctl enable docker/containerd`), first setup, start/stop,
+  phone access (→ TAILSCALE.md), password, update, backup (nightly cron line, weekly rsync to an
+  external drive, monthly `--verify`, `--prune-mirror`), restore (incl. a new computer),
+  troubleshooting (all eight from the brief and more), structure, why these technologies.
+  424 tests pass (16 new, `tests/test_backup.py`: round trip, empty-folder restore, pruning,
+  incomplete, damaged source/mirror, refuse-before-touching, rollback, verify, prune-mirror,
+  backup during an open write). **Docker check** in a throw-away container (not your vault):
+  note + 300 KB file → backup → delete the note → stop → `docker compose run`-style restore →
+  start → the note and file are back, `--verify` OK, files owned by uid 1000. Your vault's
+  image was not rebuilt.
+
 ## Next
-S10 — Backup, restore, README, from `docs/PLAYBOOK.md` adjusted by TECH_PLAN §8 gotcha 16 (files
-mirror + dated DB snapshots). Fetch the current Docker install steps for Ubuntu 26.04 first.
+S11 — Hardening: route/escape/log audit, orphan check, 375/768 QA, seed 2,000 files, fresh-install
+run of the README.
 
 ## Known issues
+- **Restore can't tell whether the vault is still running.** The README says `docker compose down`
+  first; restoring under a running vault would leave it holding the moved-aside database until
+  its next request. S11 could add a check.
+- **Cron not set up by me.** Add the `crontab -e` line from the README (section 7) and check
+  `backups/backup.log` the next morning.
 - **Not checked in S8, please check on your devices:** a video playing and seeking on the phone,
   a real Android camera photo's rotation (thumbnail and viewer), the PDF frame in **Chrome** on the
   laptop (TECH_PLAN gotcha 7), and how fast the grid feels over Tailscale the first time (thumbnails
@@ -523,4 +556,11 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
 - **S9** — `/api/search` blanks a hidden clip's `content`; the page still carries the full text in
   `.clip__source` for COPY, as every list does (TECH_PLAN §8 gotcha 2).
 - **S9** — Queries are cut at 200 characters.
+- **S10** — Backups are a files mirror + dated DB snapshots (TECH_PLAN §8 gotcha 16), not the
+  brief's `.tar.gz` archives, and keep 30 snapshots, not 14. Restore takes a snapshot name.
+- **S10** — Snapshot names use VAULT_TIMEZONE time (what you'd look for), not UTC.
+- **S10** — The copy is switched to `journal_mode=DELETE` so each snapshot is one file; the app
+  turns WAL back on at start after a restore.
+- **S10** — Restore without a name lists the snapshots; `-INCOMPLETE` ones are refused.
+- **S10** — Only `backup.sh` (Linux); no Windows `.ps1` — the office computer is Ubuntu.
 
