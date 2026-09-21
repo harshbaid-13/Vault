@@ -301,10 +301,17 @@ personal-vault/
 
 ## For development (no Docker)
 
+Only needed if you want to run the tests or the app without Docker. Python 3.12 and `pip` are
+enough — nothing else to install:
+
 ```bash
-uv venv -p 3.12 .venv && . .venv/bin/activate
-uv pip install -r requirements-dev.txt
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements-dev.txt
 pytest
 SESSION_SECRET=$(python3 -c "import secrets; print(secrets.token_urlsafe(48))") \
   VAULT_DATA_DIR=./data VAULT_BACKUP_DIR=./backups python -m app
 ```
+
+If you have [uv](https://docs.astral.sh/uv/), `uv venv -p 3.12 .venv` and
+`uv pip install -r requirements-dev.txt` do the same thing faster. The pinned versions in
+`requirements*.txt` were resolved with it, but pip installs them just as well.
