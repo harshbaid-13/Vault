@@ -65,7 +65,9 @@ def check(settings: Settings, fix: bool = False) -> int:
     wrong_size = sorted(fid for fid, path in on_disk.items()
                         if fid in rows and path.stat().st_size != rows[fid])
     thumbs_dir = settings.thumbs_dir
-    stray_thumbs = sorted(p for p in thumbs_dir.glob("*.*") if p.stem not in rows) if thumbs_dir.is_dir() else []
+    # A cached copy is <id>.webp or <id>-screen.webp, plus the .none markers beside them.
+    stray_thumbs = sorted(p for p in thumbs_dir.glob("*.*")
+                          if p.stem.split("-")[0] not in rows) if thumbs_dir.is_dir() else []
     freed = sum(on_disk[fid].stat().st_size for fid in orphans) + sum(p.stat().st_size for p in stray_thumbs)
 
     print(f"{len(rows)} files in the database, {len(on_disk)} on disk.")

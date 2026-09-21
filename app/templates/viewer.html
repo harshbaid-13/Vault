@@ -26,7 +26,7 @@
 {% for slide in slides %}
   <figure class="viewer__slide" data-id="{{ slide.id }}" data-name="{{ slide.name }}"{% if slide.favorite %} data-favorite{% endif %}{% if slide.id == current.id %} data-current{% endif %}>
     {% if slide.inline and slide.kind == "image" %}
-    <img class="viewer__img" src="/api/files/{{ slide.id }}/view" alt="{{ slide.name }}" loading="lazy" decoding="async">
+    <img class="viewer__img" src="/api/files/{{ slide.id }}/screen" alt="{{ slide.name }}" loading="lazy" decoding="async">
     {% elif slide.inline %}
     <video class="viewer__media" src="/api/files/{{ slide.id }}/view" controls playsinline preload="none"></video>
     {% else %}

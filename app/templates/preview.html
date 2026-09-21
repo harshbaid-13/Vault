@@ -15,7 +15,8 @@
 {% if missing %}
 <div class="preview preview--none">{{ icon("circle-alert", "lg") }}<p>This file is missing from the vault's disk.</p></div>
 {% elif inline and file.kind == "image" %}
-<div class="preview"><img class="preview__img" src="{{ view }}" alt="{{ file.name }}"></div>
+{#- A scaled copy, not the 4 MB original: Download and Open PDF still give the real file. -#}
+<div class="preview"><img class="preview__img" src="/api/files/{{ file.id }}/screen" alt="{{ file.name }}"></div>
 {% elif inline and file.kind == "pdf" %}
 {#- Desktop only: phones can't show a PDF in a page, so they get Open PDF below (TECH_PLAN §8 gotcha 21).
     app.js sets src only where the frame is shown, so a phone never downloads it twice. #}

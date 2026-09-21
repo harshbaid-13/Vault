@@ -297,6 +297,11 @@ async def api_view(request: Request, file_id: str) -> Response:
     return await file_response(request, file_id, inline=True)
 
 
+def scaled_image(settings, file: dict, kind: str):
+    """The cached copy of this image at that size, or None when the original is what to send."""
+    return thumbs.get(settings, file["id"], kind) if file["kind"] == "image" else None
+
+
 @router.get("/api/files/{file_id}/thumb")
 def api_thumb(request: Request, file_id: str) -> Response:
     """A ~400px WebP of an image, made on first request. 404 when there can't be one (not an
@@ -308,9 +313,33 @@ def api_thumb(request: Request, file_id: str) -> Response:
             file = get_file(conn, file_id)
     if file is None:
         raise ApiError(NOT_FOUND, 404)
-    thumb = thumbs.get(settings, file_id) if file["kind"] == "image" else None
+    thumb = scaled_image(settings, file, "thumb")
     if thumb is None:
         raise ApiError("No thumbnail for this file.", 404)
     # A file's bytes never change, so its thumbnail can be kept a week — privately, in this browser.
     return FileResponse(thumb, media_type="image/webp",
+                        headers={"Cache-Control": "private, max-age=604800", "Content-Security-Policy": FILE_CSP})
+
+
+@router.get("/api/files/{file_id}/screen")
+async def api_screen(request: Request, file_id: str) -> Response:
+    """What the preview page and the viewer show: a ~2000px WebP instead of a 4 MB photo.
+
+    Falls back to the original bytes when scaling can't help (the image is already small, it's
+    an animated GIF) or can't be done (HEIC, corrupt), so a page never shows a broken image.
+    Download and Open still serve the original, untouched.
+    """
+    settings = request.app.state.settings
+
+    def lookup() -> dict | None:
+        with db.connect(settings.db_path) as conn:
+            return get_file(conn, file_id)
+
+    file = await run_in_threadpool(lookup) if valid_id(file_id) else None
+    if file is None:
+        raise ApiError(NOT_FOUND, 404)
+    screen = await run_in_threadpool(scaled_image, settings, file, "screen")
+    if screen is None:
+        return await file_response(request, file_id, inline=True)
+    return FileResponse(screen, media_type="image/webp",
                         headers={"Cache-Control": "private, max-age=604800", "Content-Security-Policy": FILE_CSP})

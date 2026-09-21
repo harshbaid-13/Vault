@@ -95,7 +95,7 @@ def test_viewer_with_neighbours(auth_client, settings):
     assert slides == newest_first[5:26]
     assert "data-more-newer" in html and "data-more-older" in html
     assert f'data-id="{middle}" data-name="p14.jpg" data-current' in html
-    assert f'<img class="viewer__img" src="/api/files/{middle}/view"' in html
+    assert f'<img class="viewer__img" src="/api/files/{middle}/screen"' in html
     assert 'class="tabbar"' not in html and 'class="sidebar"' not in html
     assert 'data-action="copy-link"' in html and 'id="modal-delete"' in html
     assert_no_inline(html)
@@ -132,7 +132,7 @@ def test_names_escaped(auth_client):
 # ---- Preview page -------------------------------------------------------------------------
 
 @pytest.mark.parametrize("name, data, expect, absent", [
-    ("photo.png", png(), '<img class="preview__img" src="/api/files/{id}/view"', "No preview"),
+    ("photo.png", png(), '<img class="preview__img" src="/api/files/{id}/screen"', "No preview"),
     ("scan.pdf", b"%PDF-1.4", 'data-pdf-src="/api/files/{id}/view"', "No preview"),
     ("clip.mp4", b"\x00", '<video class="preview__video" src="/api/files/{id}/view" controls playsinline preload="metadata">', "No preview"),
     ("song.mp3", b"\x00", '<audio class="preview__audio" src="/api/files/{id}/view" controls', "No preview"),

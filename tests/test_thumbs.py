@@ -130,5 +130,106 @@ def test_pixel_limit(tmp_path, caplog):
     source = tmp_path / "big.png"
     source.write_bytes(bomb_png(10000, 9000))  # 90 MP
     with caplog.at_level(logging.WARNING):
-        assert thumbs.make(source, tmp_path / ("a" * 32 + ".webp"), tmp_path) is False
+        assert thumbs.make(source, tmp_path / ("a" * 32 + ".webp"), tmp_path, 400) is False
     assert "too many pixels" in caplog.text
+
+
+# ---- Screen-size copies for the preview page and the viewer (S11 follow-up) ----------------
+
+def big_jpeg(width=3000, height=2250):
+    """A photo bigger than the 2000px screen size, with enough detail not to compress to nothing.
+    Kept under the tests' 2 MB upload limit."""
+    import random
+    random.seed(1)
+    img = Image.new("RGB", (width, height))
+    row = [(random.randrange(256), random.randrange(256), random.randrange(256)) for _ in range(width)]
+    img.putdata(row * height)
+    out = io.BytesIO()
+    img.save(out, "JPEG", quality=55)
+    return out.getvalue()
+
+
+def screen_of(client, file):
+    return client.get(f"/api/files/{file['id']}/screen")
+
+
+def test_screen_copy_is_smaller_and_the_download_is_still_exact(auth_client, settings):
+    original = big_jpeg()
+    file = upload(auth_client, "IMG_0002.jpg", original)
+    r = screen_of(auth_client, file)
+    assert r.status_code == 200
+    assert r.headers["content-type"] == "image/webp"
+    assert r.headers["cache-control"] == "private, max-age=604800"
+    assert r.headers["content-security-policy"] == "sandbox; default-src 'none'"
+    with Image.open(io.BytesIO(r.content)) as img:
+        assert max(img.size) == 2000 and img.size == (2000, 1500)
+    assert len(r.content) < len(original) / 2
+    # The original is untouched, and both cached sizes sit beside each other.
+    assert auth_client.get(f"/api/files/{file['id']}/download").content == original
+    assert [p.name for p in settings.thumbs_dir.iterdir()] == [f"{file['id']}-screen.webp"]  # nothing yet for the grid
+    thumb_of(auth_client, file)
+    assert sorted(p.name for p in settings.thumbs_dir.iterdir()) == [f"{file['id']}-screen.webp", f"{file['id']}.webp"]
+
+
+def test_screen_copy_is_exif_rotated(auth_client):
+    file = upload(auth_client, "IMG_0003.jpg", rotated_jpeg())
+    with Image.open(io.BytesIO(screen_of(auth_client, file).content)) as img:
+        assert img.size == (20, 60) or img.format == "JPEG"  # small: served as it is, already upright
+
+
+def test_a_small_image_is_served_as_it_is(auth_client, settings):
+    original = png(800, 600)
+    file = upload(auth_client, "small.png", original)
+    r = screen_of(auth_client, file)
+    assert r.status_code == 200
+    assert r.content == original and r.headers["content-type"] == "image/png"
+    assert r.headers["content-disposition"].startswith("inline;")
+    assert [p.name for p in settings.thumbs_dir.iterdir()] == [f"{file['id']}-screen.none"]
+    # Asked again, it still comes back whole, without Pillow being asked twice.
+    assert screen_of(auth_client, file).content == original
+
+
+def test_an_animated_gif_keeps_its_animation(auth_client):
+    frames = [Image.new("RGB", (3000, 100), c) for c in ((255, 0, 0), (0, 0, 255))]
+    out = io.BytesIO()
+    frames[0].save(out, "GIF", save_all=True, append_images=frames[1:], duration=100, loop=0)
+    file = upload(auth_client, "wave.gif", out.getvalue())
+    r = screen_of(auth_client, file)
+    assert r.headers["content-type"] == "image/gif" and r.content == out.getvalue()
+
+
+def test_unreadable_images_fall_back_to_the_original(auth_client):
+    heic = upload(auth_client, "IMG_0004.heic", b"not really a heic")
+    r = screen_of(auth_client, heic)
+    assert r.status_code == 200 and r.content == b"not really a heic"
+    assert r.headers["content-disposition"].startswith("attachment;")  # never rendered inline
+    broken = upload(auth_client, "broken.jpg", b"\xff\xd8\xff\xe0 truncated")
+    assert screen_of(auth_client, broken).content == b"\xff\xd8\xff\xe0 truncated"
+
+
+def test_screen_copies_go_with_their_file(auth_client, settings):
+    file = upload(auth_client, "photo.jpg", big_jpeg(2500, 2500))
+    screen_of(auth_client, file)
+    thumb_of(auth_client, file)
+    assert len(list(settings.thumbs_dir.iterdir())) == 2
+    auth_client.delete(f"/api/files/{file['id']}")
+    assert list(settings.thumbs_dir.iterdir()) == []
+
+
+def test_check_does_not_call_a_screen_copy_stray(auth_client, settings, capsys):
+    from app import cli
+    file = upload(auth_client, "photo.jpg", big_jpeg(2500, 2500))
+    screen_of(auth_client, file)
+    thumb_of(auth_client, file)
+    assert cli.main(["check"], settings=settings) == 0
+    out = capsys.readouterr().out
+    assert "Everything matches." in out and "thumbnails belong to files that are gone" not in out
+
+
+def test_screen_needs_a_real_file(auth_client):
+    assert auth_client.get("/api/files/" + "0" * 32 + "/screen").status_code == 404
+    assert auth_client.get("/api/files/nope/screen").status_code == 404
+
+
+def test_screen_needs_login(client):
+    assert client.get("/api/files/" + "a" * 32 + "/screen").status_code == 401

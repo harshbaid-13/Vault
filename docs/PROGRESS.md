@@ -366,6 +366,19 @@ runs at the end of every one.
   --build` → healthy → `set-password` → log in → upload a 2 MB file → download it byte-identical
   → `cli check` clean → `./backup.sh` complete. 434 tests pass (12 new).
 
+- **S11 follow-up (your request)** — **the preview and the viewer no longer load the original
+  photo.** `thumbs.py` now keeps two sizes: `<id>.webp` (400 px, grid and rows) and
+  `<id>-screen.webp` (2000 px, quality 82 — big enough to pinch-zoom into a scan). New route
+  `GET /api/files/{id}/screen`, behind login, cached in the browser for a week like thumbnails;
+  the preview page's image and the viewer's slides point at it. It falls back to the original
+  bytes when scaling can't help (the image is already ≤ 2000 px, or an animated GIF, which would
+  lose its animation) or can't be done (HEIC, corrupt), so a page never shows a broken image.
+  **Download and Open are untouched** and still give the exact original, and so are Range
+  requests, PDFs, video and text. `cli check` knows the new name, and both sizes are deleted with
+  their file. 443 tests pass (9 new). Measured with a 12 MP photo: **0.99 MB → 0.15 MB**
+  (230 ms to make it the first time, then served from cache in 2 ms); checked in Firefox that the
+  viewer and the preview really load the 2000 px copy and that the download is byte-identical.
+
 ## Next
 Nothing — v1 is done. Ideas live in `docs/BACKLOG.md`; `docs/PLAYBOOK.md` Part C has the prompts
 for adding a feature or reporting a bug later.
@@ -623,4 +636,8 @@ Record any decision that differs from `docs/TECH_PLAN.md`, with one line on why.
   turns WAL back on at start after a restore.
 - **S10** — Restore without a name lists the snapshots; `-INCOMPLETE` ones are refused.
 - **S10** — Only `backup.sh` (Linux); no Windows `.ps1` — the office computer is Ubuntu.
+- **S11 (your call)** — Previews show a 2000 px copy, not the original. Two cached sizes per
+  photo (about 0.2 MB extra each, only for photos you actually open); they rebuild themselves
+  and are not backed up. No `srcset`, no other sizes: one screen size is enough for phone and
+  laptop, and zooming past it is what Download is for.
 
